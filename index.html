@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pose Shop — Buy Pose Coins</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --purple:#7B3FE4;--purple-deep:#4B1FA8;--purple-glow:rgba(123,63,228,0.18);
+  --gold:#D4A843;--gold-light:#F0C96A;--gold-dark:#A07820;
+  --black:#0A0A0C;--surface:#111118;--surface2:#18181F;--surface3:#1F1F2A;
+  --white:#F0EEFF;--muted:#7A738F;--border:rgba(255,255,255,0.07);
+  --green:#22C55E;--red:#EF4444;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden;}
+
+/* LOGIN GATE */
+#loginGate{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(6,6,8,0.98);backdrop-filter:blur(20px);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+  transition:opacity 0.4s;
+}
+#loginGate.hidden{opacity:0;pointer-events:none;}
+.login-card{
+  background:var(--surface2);border:1px solid rgba(212,168,67,0.25);
+  border-radius:24px;padding:44px 40px;width:100%;max-width:400px;text-align:center;
+}
+.login-logo{display:inline-flex;align-items:center;gap:10px;justify-content:center;margin-bottom:28px;}
+
+/* ── LOGO BOX ── real image, circular/rounded fit */
+.logo-box{
+  width:38px;height:38px;border-radius:11px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.logo-box img{width:100%;height:100%;object-fit:cover;display:block;}
+
+.logo-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--white);}
+.logo-shop{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:500;align-self:flex-end;margin-bottom:4px;}
+.login-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:3px;margin-bottom:6px;}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:32px;line-height:1.65;}
+.login-sub span{color:var(--gold);}
+#loginError{
+  background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+  border-radius:10px;padding:12px 16px;font-size:13px;color:#FCA5A5;
+  margin-bottom:16px;display:none;text-align:left;
+}
+.lfield{margin-bottom:14px;text-align:left;}
+.lfield label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:500;}
+.lfield input{
+  width:100%;background:var(--surface3);border:1px solid rgba(123,63,228,0.25);
+  border-radius:12px;padding:14px 18px;color:var(--white);
+  font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.3s;
+}
+.lfield input:focus{border-color:var(--gold);}
+.lfield input::placeholder{color:var(--muted);}
+.login-btn{
+  width:100%;padding:16px;margin-top:6px;
+  background:linear-gradient(135deg,var(--purple),var(--purple-deep));
+  color:var(--white);border:none;border-radius:14px;
+  font-size:14px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;
+}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(123,63,228,0.4);}
+.login-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.login-note{font-size:12px;color:var(--muted);margin-top:20px;line-height:1.7;}
+.login-note span{color:var(--gold);}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,10,12,0.95);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;height:62px;display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.nav-balance{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.25);
+  border-radius:100px;padding:8px 16px;
+}
+.nav-balance .bnum{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--gold);}
+.nav-balance .blbl{font-size:11px;color:var(--muted);letter-spacing:1px;}
+.nav-user{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:100px;padding:8px 16px;
+}
+.nav-avatar{
+  width:28px;height:28px;border-radius:50%;background:var(--purple);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;color:var(--white);flex-shrink:0;
+}
+.nav-email{font-size:12px;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.logout-btn{
+  background:transparent;border:1px solid var(--border);border-radius:100px;
+  padding:8px 16px;color:var(--muted);font-size:12px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all 0.2s;
+}
+.logout-btn:hover{border-color:rgba(239,68,68,0.5);color:#FCA5A5;}
+
+/* HERO */
+.hero{
+  background:linear-gradient(160deg,rgba(123,63,228,0.12) 0%,transparent 60%),linear-gradient(200deg,rgba(212,168,67,0.06) 0%,transparent 50%);
+  border-bottom:1px solid var(--border);padding:52px 24px 44px;text-align:center;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);
+  width:600px;height:300px;background:radial-gradient(ellipse,rgba(123,63,228,0.12) 0%,transparent 70%);pointer-events:none;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.25);
+  border-radius:100px;padding:6px 18px;
+  font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold-light);
+  margin-bottom:24px;font-weight:500;
+}
+.ldot{width:7px;height:7px;border-radius:50%;background:var(--gold);display:inline-block;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,8vw,84px);letter-spacing:6px;line-height:0.95;margin-bottom:18px;}
+.hero h1 em{font-style:normal;color:var(--gold);}
+.hero p{font-size:clamp(14px,2vw,17px);color:var(--muted);max-width:520px;margin:0 auto 32px;line-height:1.8;}
+.hero p strong{color:var(--white);font-weight:500;}
+.pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.pill{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:100px;padding:9px 18px;font-size:12px;color:var(--white);font-weight:400;
+}
+
+/* MAIN */
+.main{max-width:960px;margin:0 auto;padding:48px 24px 80px;}
+.slabel{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:6px;}
+.stitle{font-family:'Bebas Neue',sans-serif;font-size:clamp(30px,5vw,50px);letter-spacing:4px;margin-bottom:8px;}
+.ssub{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:32px;}
+
+/* RATE BANNER */
+.rate-banner{
+  background:linear-gradient(135deg,rgba(123,63,228,0.08),rgba(212,168,67,0.06));
+  border:1px solid rgba(212,168,67,0.2);border-radius:14px;
+  padding:16px 24px;margin-bottom:20px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.rate-info{font-size:14px;color:var(--muted);}
+.rate-info strong{color:var(--white);}
+.rate-badge{
+  background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.3);
+  border-radius:100px;padding:6px 18px;
+  font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--gold);
+}
+
+/* PAY TIP */
+.pay-tip{
+  background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.2);border-radius:12px;
+  padding:14px 20px;margin-bottom:36px;
+  display:flex;align-items:flex-start;gap:12px;font-size:13px;line-height:1.7;
+}
+.pay-tip strong{color:var(--green);}
+.pay-tip span{color:var(--muted);}
+
+/* CUSTOM AMOUNT */
+.custom-box{
+  background:var(--surface2);border:1px solid var(--border);border-radius:20px;
+  padding:28px 32px;margin-bottom:40px;
+  display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+}
+.custom-lbl{flex:1;min-width:180px;}
+.custom-lbl h3{font-size:15px;font-weight:500;margin-bottom:4px;}
+.custom-lbl p{font-size:13px;color:var(--muted);line-height:1.6;}
+.custom-right{flex:1;min-width:220px;}
+.naira-row{display:flex;align-items:center;background:var(--surface3);border:1px solid rgba(123,63,228,0.3);border-radius:12px;overflow:hidden;margin-bottom:10px;transition:border-color 0.3s;}
+.naira-row:focus-within{border-color:var(--gold);}
+.naira-pfx{padding:0 14px;font-size:18px;font-weight:600;color:var(--gold);border-right:1px solid var(--border);height:52px;display:flex;align-items:center;background:rgba(212,168,67,0.08);}
+.naira-inp{background:transparent;border:none;outline:none;color:var(--white);font-size:20px;font-weight:500;font-family:'DM Sans',sans-serif;padding:0 16px;width:100%;height:52px;}
+.naira-inp::placeholder{color:var(--muted);font-size:15px;font-weight:300;}
+.cprev{font-size:12px;color:var(--muted);min-height:18px;margin-bottom:10px;}
+.cprev strong{color:var(--gold-light);}
+.cbuy-btn{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold-dark));
+  color:#000;border:none;border-radius:12px;
+  font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;
+}
+.cbuy-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(212,168,67,0.35);}
+
+/* PACKAGES */
+.pkgs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:52px;}
+.pkg{
+  background:var(--surface2);border:1px solid var(--border);border-radius:20px;
+  overflow:hidden;cursor:pointer;transition:all 0.35s;position:relative;
+}
+.pkg:hover{border-color:rgba(212,168,67,0.4);transform:translateY(-6px);box-shadow:0 20px 48px rgba(0,0,0,0.5);}
+.pkg.pop{border-color:var(--gold);box-shadow:0 8px 32px rgba(212,168,67,0.12);}
+.pop-tag{
+  position:absolute;top:14px;right:14px;
+  background:linear-gradient(135deg,var(--gold-light),var(--gold-dark));
+  color:#000;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  padding:4px 10px;border-radius:100px;
+}
+.pkg-img{
+  width:100%;aspect-ratio:1;
+  background:linear-gradient(135deg,rgba(123,63,228,0.08),rgba(212,168,67,0.05));
+  display:flex;align-items:center;justify-content:center;
+  border-bottom:1px solid var(--border);overflow:hidden;
+}
+.pkg-img img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s;}
+.pkg:hover .pkg-img img{transform:scale(1.05);}
+.pkg-body{padding:20px 20px 24px;}
+.pkg-name{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:500;}
+.pkg-coins{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--gold);letter-spacing:3px;line-height:1;margin-bottom:2px;}
+.pkg-clbl{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.pkg-bonus{font-size:12px;color:#9B6FEC;margin-bottom:14px;min-height:18px;font-weight:500;}
+.pkg-price{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px;margin-bottom:16px;}
+.pkg-price small{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);font-weight:300;letter-spacing:0;}
+.pkg-btn{
+  width:100%;padding:12px;
+  background:rgba(123,63,228,0.12);border:1px solid rgba(123,63,228,0.25);
+  border-radius:10px;color:#9B6FEC;font-size:12px;
+  letter-spacing:2px;text-transform:uppercase;
+  cursor:pointer;transition:all 0.3s;font-family:'DM Sans',sans-serif;font-weight:500;
+}
+.pkg-btn:hover,.pkg.pop .pkg-btn{background:linear-gradient(135deg,var(--gold-light),var(--gold-dark));color:#000;border-color:transparent;font-weight:700;}
+
+/* TRUST BAR */
+.trust{display:flex;gap:20px;flex-wrap:wrap;align-items:center;justify-content:center;padding:28px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:52px;}
+.titem{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);}
+.tdot{width:6px;height:6px;border-radius:50%;}
+.tdot.g{background:var(--gold);}
+.tdot.p{background:var(--purple);}
+
+/* WHY / HOW */
+.why-section{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:44px 36px;margin-bottom:52px;}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:32px;}
+.wicon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+.wicon.p{background:rgba(123,63,228,0.15);}
+.wicon.g{background:rgba(212,168,67,0.12);}
+.wicon.w{background:rgba(75,31,168,0.15);}
+.wicon svg{width:22px;height:22px;}
+.wcard h3{font-size:14px;font-weight:500;margin-bottom:8px;}
+.wcard p{font-size:13px;color:var(--muted);line-height:1.75;}
+.how-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border-radius:20px;overflow:hidden;margin-bottom:52px;}
+.hstep{background:var(--surface2);padding:30px 26px;position:relative;}
+.hline{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--gold));}
+.hnum{font-family:'Bebas Neue',sans-serif;font-size:52px;color:rgba(123,63,228,0.1);line-height:1;margin-bottom:14px;}
+.htitle{font-size:14px;font-weight:500;margin-bottom:8px;}
+.hdesc{font-size:13px;color:var(--muted);line-height:1.7;}
+
+/* TOAST */
+#toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.4);
+  border-radius:14px;padding:16px 28px;
+  font-size:14px;color:#86EFAC;font-weight:500;
+  z-index:8000;transition:transform 0.4s;white-space:nowrap;pointer-events:none;
+}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+/* FOOTER */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:28px 24px;text-align:center;}
+.footer-inner{max-width:960px;margin:0 auto;}
+footer p{font-size:12px;color:var(--muted);line-height:1.8;margin-bottom:14px;}
+.flinks{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;}
+.flinks a{font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s;}
+.flinks a:hover{color:var(--white);}
+
+@media(max-width:700px){
+  .pkgs,.why-grid,.how-strip{grid-template-columns:1fr 1fr;}
+  .how-strip{gap:2px;}
+  .custom-box{flex-direction:column;align-items:stretch;}
+  .why-section{padding:28px 20px;}
+  .login-card{padding:32px 24px;}
+  .nav-user{display:none;}
+}
+@media(max-width:480px){
+  .pkgs,.why-grid{grid-template-columns:1fr;}
+  .how-strip{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ====== LOGIN GATE ====== -->
+<div id="loginGate">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-box">
+        <img src="https://i.ibb.co/Y7RxjFzF/poselogobg.jpg" alt="Pose" />
+      </div>
+      <div class="logo-name">POSE</div>
+      <div class="logo-shop">SHOP</div>
+    </div>
+    <div class="login-title">SIGN IN</div>
+    <div class="login-sub">Use your Pose account to buy coins.<br>No account? <span>Download the Pose app to register.</span></div>
+    <div id="loginError"></div>
+    <div class="lfield">
+      <label>Email Address</label>
+      <input type="email" id="loginEmail" placeholder="yourname@email.com" />
+    </div>
+    <div class="lfield">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" />
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In to Pose Shop</button>
+    <div class="login-note">🔒 Secured login · Coins appear in the app immediately<br>Only existing Pose users can sign in here</div>
+  </div>
+</div>
+
+<!-- ====== NAV ====== -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="logo-box">
+      <img src="https://i.ibb.co/Y7RxjFzF/poselogobg.jpg" alt="Pose" />
+    </div>
+    <div class="logo-name">POSE</div>
+    <div class="logo-shop">SHOP</div>
+  </a>
+  <div class="nav-right">
+    <div class="nav-balance">
+      <span class="bnum" id="navCoins">—</span>
+      <span class="blbl">🪙 Coins</span>
+    </div>
+    <div class="nav-user">
+      <div class="nav-avatar" id="navAvatar">?</div>
+      <span class="nav-email" id="navEmail">—</span>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- ====== HERO ====== -->
+<div class="hero">
+  <div class="hero-badge"><span class="ldot"></span> Official Coin Store</div>
+  <h1>POSE<br><em>COINS</em></h1>
+  <p><strong>Watch what you love. Support who you love.</strong><br>Pose Coins unlock exclusive videos and books from your favourite creators — and make sure they get paid for every moment they entertain you.</p>
+  <div class="pills">
+    <div class="pill">Unlock premium content</div>
+    <div class="pill">Coins never expire</div>
+    <div class="pill">Creators earn instantly</div>
+  </div>
+</div>
+
+<!-- ====== MAIN ====== -->
+<div class="main">
+
+  <div class="slabel">Pose Shop</div>
+  <div class="stitle">BUY <span style="color:var(--gold)">POSE COINS</span></div>
+  <div class="ssub">Choose a package or enter any amount. Rate: ₦25 = 1 Pose Coin. Minimum ₦100.</div>
+
+  <!-- RATE BANNER -->
+  <div class="rate-banner">
+    <div class="rate-info"><strong>Fixed Rate</strong> — no hidden charges, no conversion fees</div>
+    <div class="rate-badge">₦25 = 1 Pose Coin 🪙</div>
+  </div>
+
+  <!-- PAY TIP -->
+  <div class="pay-tip">
+    <div style="font-size:18px;flex-shrink:0;margin-top:1px;">💳</div>
+    <div><strong>Use your bank card for instant delivery.</strong> <span>Bank transfer, USSD, and mobile money may take a few minutes to reflect in your account. Card payment is the fastest — your coins appear immediately after payment.</span></div>
+  </div>
+
+  <!-- CUSTOM AMOUNT -->
+  <div class="custom-box">
+    <div class="custom-lbl">
+      <h3>Enter Your Own Amount</h3>
+      <p>Type any Naira amount from ₦100. See exactly how many coins you'll receive before paying.</p>
+    </div>
+    <div class="custom-right">
+      <div class="naira-row">
+        <div class="naira-pfx">₦</div>
+        <input class="naira-inp" type="number" id="customAmt" placeholder="e.g. 1000" min="100" oninput="previewCustom(this.value)">
+      </div>
+      <div class="cprev" id="cprev"></div>
+      <button class="cbuy-btn" onclick="buyCustom()">Pay & Get Coins →</button>
+    </div>
+  </div>
+
+  <!-- PACKAGES -->
+  <div class="pkgs">
+
+    <div class="pkg" onclick="buyPkg(20, 500, 'Starter Pack — 20 Pose Coins')">
+      <div class="pkg-img">
+        <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="38" fill="url(#g1)"/>
+          <circle cx="50" cy="50" r="30" fill="none" stroke="#F0C96A" stroke-width="1.5" opacity="0.4"/>
+          <text x="50" y="59" text-anchor="middle" font-family="serif" font-size="26" fill="#FFF8E0">P</text>
+          <defs><radialGradient id="g1" cx="38%" cy="32%"><stop offset="0%" stop-color="#F0C96A"/><stop offset="100%" stop-color="#7B4A00"/></radialGradient></defs>
+        </svg>
+      </div>
+      <div class="pkg-body">
+        <div class="pkg-name">Starter Pack</div>
+        <div class="pkg-coins">20</div>
+        <div class="pkg-clbl">Pose Coins 🪙</div>
+        <div class="pkg-bonus"></div>
+        <div class="pkg-price">₦500 <small>/ pack</small></div>
+        <button class="pkg-btn">Buy Now</button>
+      </div>
+    </div>
+
+    <div class="pkg pop" onclick="buyPkg(120, 2500, 'Value Pack — 120 Pose Coins')">
+      <div class="pop-tag">Most Popular</div>
+      <div class="pkg-img" style="background:linear-gradient(135deg,rgba(212,168,67,0.1),rgba(123,63,228,0.08));">
+        <svg width="140" height="100" viewBox="0 0 140 100" fill="none">
+          <circle cx="52" cy="60" r="26" fill="url(#g2b)" opacity="0.85"/>
+          <circle cx="88" cy="60" r="26" fill="url(#g2c)" opacity="0.85"/>
+          <circle cx="70" cy="48" r="30" fill="url(#g2a)"/>
+          <circle cx="70" cy="48" r="30" fill="none" stroke="#F0C96A" stroke-width="1.5" opacity="0.5"/>
+          <text x="70" y="57" text-anchor="middle" font-family="serif" font-size="22" fill="#FFF8E0">P</text>
+          <defs>
+            <radialGradient id="g2a" cx="38%" cy="32%"><stop offset="0%" stop-color="#FFD96A"/><stop offset="100%" stop-color="#8B5E00"/></radialGradient>
+            <radialGradient id="g2b" cx="38%" cy="32%"><stop offset="0%" stop-color="#D4A843"/><stop offset="100%" stop-color="#7B4A00"/></radialGradient>
+            <radialGradient id="g2c" cx="38%" cy="32%"><stop offset="0%" stop-color="#C99A30"/><stop offset="100%" stop-color="#6B3E00"/></radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="pkg-body">
+        <div class="pkg-name">Value Pack</div>
+        <div class="pkg-coins">120</div>
+        <div class="pkg-clbl">Pose Coins 🪙</div>
+        <div class="pkg-bonus">+ 20 bonus coins included 🔥</div>
+        <div class="pkg-price">₦2,500 <small>/ pack</small></div>
+        <button class="pkg-btn">Buy Now</button>
+      </div>
+    </div>
+
+    <div class="pkg" onclick="buyPkg(480, 10000, 'Mega Pack — 480 Pose Coins')">
+      <div class="pkg-img" style="background:linear-gradient(135deg,rgba(212,168,67,0.12),rgba(123,63,228,0.08));">
+        <svg width="160" height="100" viewBox="0 0 160 100" fill="none">
+          <circle cx="55" cy="64" r="20" fill="url(#g3e)" opacity="0.7"/>
+          <circle cx="105" cy="64" r="20" fill="url(#g3d)" opacity="0.7"/>
+          <circle cx="55" cy="56" r="24" fill="url(#g3c)" opacity="0.85"/>
+          <circle cx="105" cy="56" r="24" fill="url(#g3b)" opacity="0.85"/>
+          <circle cx="80" cy="48" r="28" fill="url(#g3a)"/>
+          <circle cx="80" cy="48" r="28" fill="none" stroke="#F0C96A" stroke-width="1.5" opacity="0.6"/>
+          <text x="80" y="56" text-anchor="middle" font-family="serif" font-size="20" fill="#FFF8E0">P</text>
+          <defs>
+            <radialGradient id="g3a" cx="38%" cy="30%"><stop offset="0%" stop-color="#FFE07A"/><stop offset="100%" stop-color="#8B5E00"/></radialGradient>
+            <radialGradient id="g3b" cx="38%" cy="30%"><stop offset="0%" stop-color="#EFC55A"/><stop offset="100%" stop-color="#7B4A00"/></radialGradient>
+            <radialGradient id="g3c" cx="38%" cy="30%"><stop offset="0%" stop-color="#D4A843"/><stop offset="100%" stop-color="#6B3E00"/></radialGradient>
+            <radialGradient id="g3d" cx="38%" cy="30%"><stop offset="0%" stop-color="#C99A30"/><stop offset="100%" stop-color="#5A3200"/></radialGradient>
+            <radialGradient id="g3e" cx="38%" cy="30%"><stop offset="0%" stop-color="#BA8C20"/><stop offset="100%" stop-color="#4A2800"/></radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="pkg-body">
+        <div class="pkg-name">Mega Pack</div>
+        <div class="pkg-coins">480</div>
+        <div class="pkg-clbl">Pose Coins 🪙</div>
+        <div class="pkg-bonus">+ 80 bonus coins 💎 Best value</div>
+        <div class="pkg-price">₦10,000 <small>/ pack</small></div>
+        <button class="pkg-btn">Buy Now</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TRUST -->
+  <div class="trust">
+    <div class="titem"><div class="tdot g"></div>Instant delivery (card)</div>
+    <div class="titem"><div class="tdot p"></div>Coins never expire</div>
+    <div class="titem"><div class="tdot g"></div>Minimum ₦100</div>
+    <div class="titem"><div class="tdot p"></div>₦25 = 1 Pose Coin</div>
+    <div class="titem"><div class="tdot g"></div>Supports real creators</div>
+  </div>
+
+  <!-- WHY -->
+  <div class="why-section">
+    <div class="slabel">Why Pose Coins?</div>
+    <div class="stitle" style="font-size:clamp(26px,4vw,40px);">WATCH WHAT YOU LOVE.<br><span style="color:var(--gold)">SUPPORT WHO YOU LOVE.</span></div>
+    <div class="why-grid">
+      <div class="wcard">
+        <div class="wicon p"><svg viewBox="0 0 24 24" fill="none"><path d="M5 3L19 12L5 21V3Z" fill="#9B6FEC"/></svg></div>
+        <h3>Unlock Premium Content</h3>
+        <p>Access thousands of exclusive videos and books you won't find anywhere else. Your coins give you VIP access whenever you want it.</p>
+      </div>
+      <div class="wcard">
+        <div class="wicon g"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#D4A843" stroke-width="1.8"/><path d="M12 7V12L15 14" stroke="#D4A843" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <h3>Coins That Last Forever</h3>
+        <p>No expiry dates. No rush. Buy coins today and use them months later. Your balance is there until you're ready to spend it.</p>
+      </div>
+      <div class="wcard">
+        <div class="wicon w"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 4 14 4 9a8 8 0 0116 0c0 5-8 12-8 12z" fill="#7B3FE4" opacity="0.7"/><circle cx="12" cy="9" r="2.5" fill="#9B6FEC"/></svg></div>
+        <h3>Directly Support Creators</h3>
+        <p>Every coin you spend goes straight to the creator. When you watch and pay, you're funding someone's dream and livelihood.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW -->
+  <div class="slabel" style="margin-bottom:8px">Simple Process</div>
+  <div class="stitle" style="font-size:clamp(26px,4vw,40px);margin-bottom:32px">HOW IT <span style="color:var(--gold)">WORKS</span></div>
+  <div class="how-strip">
+    <div class="hstep">
+      <div class="hline"></div>
+      <div class="hnum">01</div>
+      <div class="htitle">Pick a Pack</div>
+      <div class="hdesc">Choose a package or type your own amount from ₦100. See your coins before you pay — no surprises.</div>
+    </div>
+    <div class="hstep">
+      <div class="hnum">02</div>
+      <div class="htitle">Pay with Card</div>
+      <div class="hdesc">Use your bank card for instant delivery. Other methods work too but may take a few minutes to reflect.</div>
+    </div>
+    <div class="hstep">
+      <div class="hnum">03</div>
+      <div class="htitle">Enjoy Everything</div>
+      <div class="hdesc">Open the Pose app — your coins are there. Watch, read, and support every creator you love.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast">🎉 Pose Coins added!</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <p>© 2025 Pose. All rights reserved.<br>Pose Coins are virtual currency for use within the Pose app only. Rate: ₦25 per coin. All purchases are final.</p>
+    <div class="flinks">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Use</a>
+      <a href="#">Help Centre</a>
+      <a href="#">Download App</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   FIREBASE INIT
+============================================================ */
+const firebaseConfig = {
+  apiKey:            "AIzaSyDW8V2SjNITrA4LcdmeILh944mTbOKnM0c",
+  authDomain:        "rewarderhub.firebaseapp.com",
+  projectId:         "rewarderhub",
+  storageBucket:     "rewarderhub.appspot.com",
+  messagingSenderId: "85965945106",
+  appId:             "1:85965945106:web:fa0a57d8968926e1041bcb",
+  measurementId:     "G-F2ERB5NGN0"
+};
+firebase.initializeApp(firebaseConfig);
+const db   = firebase.firestore();
+const auth = firebase.auth();
+
+const COIN_RATE   = 25;
+const FLW_PUB_KEY = "FLWPUBK-2a3845212c24d426fb9b4bcc4155ecd7-X";
+let currentUser   = null;
+
+/* ============================================================
+   AUTH STATE LISTENER
+============================================================ */
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    showShop(user);
+  } else {
+    currentUser = null;
+    document.getElementById('loginGate').classList.remove('hidden');
+  }
+});
+
+/* ============================================================
+   LOGIN
+============================================================ */
+function doLogin() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errDiv   = document.getElementById('loginError');
+  const btn      = document.getElementById('loginBtn');
+
+  errDiv.style.display = 'none';
+  if (!email || !password) { showErr('Please enter your email and password.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  auth.signInWithEmailAndPassword(email, password).catch(err => {
+    btn.disabled = false;
+    btn.textContent = 'Sign In to Pose Shop';
+    const msgs = {
+      'auth/user-not-found':    'No Pose account found with this email.',
+      'auth/wrong-password':    'Incorrect password. Please try again.',
+      'auth/invalid-email':     'Please enter a valid email address.',
+      'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
+      'auth/invalid-credential':'Incorrect email or password. Please try again.'
+    };
+    showErr(msgs[err.code] || 'Login failed. Please check your details.');
+  });
+}
+
+function showErr(msg) {
+  const e = document.getElementById('loginError');
+  e.textContent = msg;
+  e.style.display = 'block';
+}
+
+document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('loginEmail').addEventListener('keydown',    e => { if(e.key==='Enter') doLogin(); });
+
+/* ============================================================
+   SHOW SHOP
+============================================================ */
+function showShop(user) {
+  document.getElementById('loginGate').classList.add('hidden');
+  const initial = (user.displayName || user.email || '?')[0].toUpperCase();
+  document.getElementById('navAvatar').textContent = initial;
+  document.getElementById('navEmail').textContent  = user.email;
+  loadCoinBalance();
+}
+
+/* ============================================================
+   LOAD COIN BALANCE
+============================================================ */
+function loadCoinBalance() {
+  if (!currentUser) return;
+  db.collection('users').doc(currentUser.uid).get().then(doc => {
+    const coins = doc.exists ? (doc.data().pCoinBalance || 0) : 0;
+    document.getElementById('navCoins').textContent = coins.toLocaleString();
+  });
+}
+
+/* ============================================================
+   LOGOUT
+============================================================ */
+function doLogout() {
+  auth.signOut();
+  document.getElementById('loginGate').classList.remove('hidden');
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('loginBtn').textContent = 'Sign In to Pose Shop';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginEmail').value    = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('navCoins').textContent = '—';
+  document.getElementById('navEmail').textContent = '—';
+  document.getElementById('navAvatar').textContent = '?';
+}
+
+/* ============================================================
+   CUSTOM AMOUNT PREVIEW
+============================================================ */
+function previewCustom(val) {
+  const n  = parseFloat(val);
+  const el = document.getElementById('cprev');
+  if (n >= 100) {
+    const coins = Math.floor(n / COIN_RATE);
+    el.innerHTML = `You will receive <strong>${coins.toLocaleString()} 🪙 Pose Coins</strong>`;
+  } else if (n > 0) {
+    el.innerHTML = `<span style="color:var(--red)">Minimum is ₦100</span>`;
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+/* ============================================================
+   BUY CUSTOM
+============================================================ */
+function buyCustom() {
+  if (!currentUser) { alert('Please sign in first.'); return; }
+  const val = parseFloat(document.getElementById('customAmt').value);
+  if (!val || val < 100) { alert('Minimum purchase is ₦100.'); return; }
+  const coins = Math.floor(val / COIN_RATE);
+  launchFlutterwave(val, coins, `Custom — ${coins} Pose Coins`);
+}
+
+/* ============================================================
+   BUY PACKAGE
+============================================================ */
+function buyPkg(coins, amount, description) {
+  if (!currentUser) { alert('Please sign in first.'); return; }
+  launchFlutterwave(amount, coins, description);
+}
+
+/* ============================================================
+   FLUTTERWAVE — DIRECT CALLBACK
+============================================================ */
+function launchFlutterwave(amount, coins, description) {
+  const txRef = `poseshop_${currentUser.uid}_${Date.now()}`;
+
+  FlutterwaveCheckout({
+    public_key:      FLW_PUB_KEY,
+    tx_ref:          txRef,
+    amount:          amount,
+    currency:        "NGN",
+    country:         "NG",
+    payment_options: "card,ussd,banktransfer,mobilemoney",
+    customer: {
+      email:        currentUser.email,
+      phone_number: "",
+      name:         currentUser.displayName || currentUser.email
+    },
+    customizations: {
+      title:       "Pose Shop",
+      description: description,
+      logo:        "https://i.ibb.co/Y7RxjFzF/poselogobg.jpg"
+    },
+    callback: (response) => {
+      console.log('🔔 Flutterwave callback:', response);
+      if (
+        response.status === "successful" ||
+        response.status === "completed" ||
+        response.tx_ref
+      ) {
+        console.log('💳 Payment successful, tx:', response.transaction_id || response.flw_ref);
+        creditCoins(coins, amount, response.transaction_id || response.flw_ref, description);
+      } else if (response.status === "cancelled") {
+        console.log('🚫 Payment cancelled');
+      } else {
+        alert('Payment was not completed. Please try again.');
+      }
+    },
+    onclose: () => {
+      console.log('Payment modal closed');
+    }
+  });
+}
+
+/* ============================================================
+   CREDIT COINS TO FIRESTORE
+============================================================ */
+async function creditCoins(coins, amountPaid, transactionId, description) {
+  if (!currentUser) return;
+  try {
+    const userRef = db.collection('users').doc(currentUser.uid);
+
+    // Increment pCoinBalance
+    await userRef.update({
+      pCoinBalance:    firebase.firestore.FieldValue.increment(coins),
+      lastCoinPurchase: new Date().toISOString()
+    });
+
+    // Record transaction
+    await userRef.collection('walletTransactions').add({
+      id:            'PCOIN_' + transactionId,
+      type:          'Coin Purchase',
+      coins:         coins,
+      amountPaid:    amountPaid,
+      currency:      'NGN',
+      status:        'completed',
+      date:          new Date().toISOString(),
+      description:   description,
+      transactionId: String(transactionId),
+      paymentMethod: 'flutterwave',
+      source:        'pose-shop-web'
+    });
+
+    console.log(`✅ ${coins} Pose Coins credited to ${currentUser.uid}`);
+
+    // Refresh balance in nav
+    loadCoinBalance();
+
+    // Show toast
+    showToast(`🎉 ${coins.toLocaleString()} Pose Coins added to your account!`);
+
+  } catch (err) {
+    console.error('Error crediting coins:', err);
+    alert(
+      'Payment received but there was an error updating your coins.\n' +
+      'Please contact support with your transaction ID: ' + transactionId
+    );
+  }
+}
+
+/* ============================================================
+   TOAST
+============================================================ */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 5000);
+}
+</script>
+</body>
+</html>
