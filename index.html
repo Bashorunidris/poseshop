@@ -1,11 +1,10 @@
-python
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Pose Shop — Buy Pose Coins</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -13,312 +12,233 @@ python
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
-  --purple:#7B3FE4;--purple-deep:#4B1FA8;--purple-glow:rgba(123,63,228,0.18);
-  --gold:#D4A843;--gold-light:#F0C96A;--gold-dark:#A07820;--gold-glow:rgba(212,168,67,0.15);
-  --breet:#00C896;--breet-deep:#009E76;--breet-glow:rgba(0,200,150,0.15);--breet-border:rgba(0,200,150,0.3);
-  --black:#0A0A0C;--surface:#111118;--surface2:#18181F;--surface3:#1F1F2A;--surface4:#16161E;
-  --white:#F0EEFF;--muted:#7A738F;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.04);
-  --green:#22C55E;--red:#EF4444;
+  --void:#0B0710;--surface:#150F22;--surface2:#1C1430;--surface3:#241A3D;--surface4:#180F28;
+  --violet:#8355FF;--violet-deep:#3D1F91;--violet-glow:rgba(131,85,255,0.22);
+  --gold:#E3B34D;--gold-soft:#F4D480;--gold-deep:#9C7420;--gold-glow:rgba(227,179,77,0.16);
+  --cyan:#4FD1E8;--cyan-deep:#1B8FA3;--cyan-glow:rgba(79,209,232,0.16);
+  --breet:#00C896;
+  --ink:#FFFFFF;--mute:#BDB4D6;--mute2:#8A80A8;--line:rgba(255,255,255,0.14);--line2:rgba(255,255,255,0.07);
+  --green:#22C55E;--red:#F0596B;
   --safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom);
   --safe-left:env(safe-area-inset-left);--safe-right:env(safe-area-inset-right);
 }
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
-body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden;}
+body{background:var(--void);color:var(--ink);font-family:'DM Sans',sans-serif;font-weight:400;min-height:100vh;overflow-x:hidden;}
+.mono{font-family:'JetBrains Mono',monospace;font-weight:600;font-variant-numeric:tabular-nums;}
 
 /* ── LOGIN GATE ── */
-#loginGate{position:fixed;inset:0;z-index:9999;background:rgba(6,6,8,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;padding:max(24px,calc(var(--safe-top)+16px)) max(24px,var(--safe-right)) max(24px,var(--safe-bottom)) max(24px,var(--safe-left));transition:opacity 0.4s;}
+#loginGate{position:fixed;inset:0;z-index:9999;background:rgba(6,3,10,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;padding:max(24px,calc(var(--safe-top)+16px)) max(24px,var(--safe-right)) max(24px,var(--safe-bottom)) max(24px,var(--safe-left));transition:opacity 0.4s;}
 #loginGate.hidden{opacity:0;pointer-events:none;}
-.login-card{background:var(--surface2);border:1px solid rgba(212,168,67,0.2);border-radius:24px;padding:36px 28px;width:100%;max-width:400px;text-align:center;}
-.login-logo{display:inline-flex;align-items:center;gap:10px;justify-content:center;margin-bottom:24px;}
+.login-card{background:var(--surface2);border:1px solid rgba(227,179,77,0.18);border-radius:26px;padding:36px 28px;width:100%;max-width:400px;text-align:center;}
+.login-logo{display:inline-flex;align-items:center;gap:10px;justify-content:center;margin-bottom:22px;}
 .logo-box{width:36px;height:36px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .logo-box img{width:100%;height:100%;object-fit:cover;display:block;}
-.logo-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;color:var(--white);}
-.logo-shop{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:500;align-self:flex-end;margin-bottom:3px;}
+.logo-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;color:var(--ink);}
+.logo-shop{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:600;align-self:flex-end;margin-bottom:3px;}
 .login-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;margin-bottom:6px;}
-.login-sub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.65;}
+.login-sub{font-size:13px;color:var(--mute);margin-bottom:26px;line-height:1.65;}
 .login-sub span{color:var(--gold);}
-#loginError{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:12px 16px;font-size:13px;color:#FCA5A5;margin-bottom:16px;display:none;text-align:left;}
+#loginError{background:rgba(240,89,107,0.1);border:1px solid rgba(240,89,107,0.3);border-radius:10px;padding:12px 16px;font-size:13px;color:#FCA5A5;margin-bottom:16px;display:none;text-align:left;}
 .lfield{margin-bottom:14px;text-align:left;}
-.lfield label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:500;}
-.lfield input{width:100%;background:var(--surface3);border:1px solid rgba(123,63,228,0.25);border-radius:12px;padding:14px 16px;color:var(--white);font-size:16px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.3s;-webkit-appearance:none;}
+.lfield label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mute);margin-bottom:8px;font-weight:500;}
+.lfield input{width:100%;background:var(--surface3);border:1px solid rgba(131,85,255,0.25);border-radius:12px;padding:14px 16px;color:var(--ink);font-size:16px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.3s;-webkit-appearance:none;}
 .lfield input:focus{border-color:var(--gold);}
-.lfield input::placeholder{color:var(--muted);}
-.login-btn{width:100%;padding:16px;margin-top:6px;background:linear-gradient(135deg,var(--purple),var(--purple-deep));color:var(--white);border:none;border-radius:14px;font-size:15px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;-webkit-appearance:none;}
+.lfield input::placeholder{color:var(--mute);}
+.login-btn{width:100%;padding:16px;margin-top:6px;background:linear-gradient(135deg,var(--violet),var(--violet-deep));color:var(--ink);border:none;border-radius:14px;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;-webkit-appearance:none;}
 .login-btn:active{transform:scale(0.98);}
 .login-btn:disabled{opacity:0.5;cursor:not-allowed;}
-.login-note{font-size:12px;color:var(--muted);margin-top:18px;line-height:1.7;}
+.login-note{font-size:12px;color:var(--mute);margin-top:18px;line-height:1.7;}
 .login-note span{color:var(--gold);}
+.login-divider{display:flex;align-items:center;gap:12px;margin:18px 0;}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--line);}
+.login-divider span{font-size:10px;letter-spacing:2px;color:var(--mute);text-transform:uppercase;flex-shrink:0;}
+.google-btn{width:100%;padding:13px;background:#FFFFFF;color:#1F1F1F;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s;-webkit-appearance:none;}
+.google-btn:active{transform:scale(0.98);}
+.google-btn:disabled{opacity:0.6;cursor:not-allowed;}
+.google-btn svg{width:18px;height:18px;flex-shrink:0;}
 
 /* ── NAV ── */
-nav{position:sticky;top:0;z-index:100;background:rgba(10,10,12,0.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;justify-content:space-between;padding-left:max(16px,var(--safe-left));padding-right:max(16px,var(--safe-right));}
+nav{position:sticky;top:0;z-index:100;background:rgba(11,7,16,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--line);height:58px;display:flex;align-items:center;justify-content:space-between;padding-left:max(16px,var(--safe-left));padding-right:max(16px,var(--safe-right));}
 .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
 .nav-right{display:flex;align-items:center;gap:8px;}
-.nav-balance{display:flex;align-items:center;gap:6px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.25);border-radius:100px;padding:7px 14px;}
-.nav-balance .bnum{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--gold);}
-.nav-balance .blbl{font-size:11px;color:var(--muted);letter-spacing:1px;}
-.nav-user{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:7px 14px;}
-.nav-avatar{width:26px;height:26px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--white);flex-shrink:0;}
-.nav-email{font-size:12px;color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.logout-btn{background:transparent;border:1px solid var(--border);border-radius:100px;padding:7px 14px;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;white-space:nowrap;}
+.nav-region{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--line);border-radius:100px;padding:7px 12px;cursor:pointer;font-size:12px;color:var(--ink);transition:border-color 0.2s;}
+.nav-region:hover{border-color:var(--gold);}
+.nav-balance{display:flex;align-items:center;gap:6px;background:rgba(227,179,77,0.1);border:1px solid rgba(227,179,77,0.25);border-radius:100px;padding:7px 14px;}
+.nav-balance .bnum{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;letter-spacing:0.5px;color:var(--gold);}
+.nav-balance .blbl{font-size:11px;color:var(--mute);letter-spacing:1px;}
+.nav-user{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line);border-radius:100px;padding:7px 14px;}
+.nav-avatar{width:26px;height:26px;border-radius:50%;background:var(--violet);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink);flex-shrink:0;}
+.nav-email{font-size:12px;color:var(--mute);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.logout-btn{background:transparent;border:1px solid var(--line);border-radius:100px;padding:7px 14px;color:var(--mute);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;white-space:nowrap;}
 
-/* ── HERO ── */
-.hero{background:linear-gradient(160deg,rgba(123,63,228,0.12) 0%,transparent 60%),linear-gradient(200deg,rgba(212,168,67,0.06) 0%,transparent 50%);border-bottom:1px solid var(--border);padding:44px 20px 36px;text-align:center;position:relative;overflow:hidden;}
-.hero::before{content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(123,63,228,0.12) 0%,transparent 70%);pointer-events:none;}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.25);border-radius:100px;padding:6px 16px;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold-light);margin-bottom:20px;font-weight:500;}
+/* ── HERO / SIGNATURE SELECTOR ── */
+.hero{background:radial-gradient(ellipse 700px 400px at 50% -10%,rgba(131,85,255,0.22),transparent 65%),radial-gradient(ellipse 500px 300px at 90% 10%,rgba(227,179,77,0.10),transparent 60%);border-bottom:1px solid var(--line);padding:40px 20px 8px;text-align:center;position:relative;overflow:hidden;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(227,179,77,0.1);border:1px solid rgba(227,179,77,0.25);border-radius:100px;padding:6px 16px;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold-soft);margin-bottom:18px;font-weight:600;}
 .ldot{width:6px;height:6px;border-radius:50%;background:var(--gold);display:inline-block;animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,14vw,84px);letter-spacing:6px;line-height:0.95;margin-bottom:16px;}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(46px,13vw,76px);letter-spacing:5px;line-height:0.95;margin-bottom:12px;}
 .hero h1 em{font-style:normal;color:var(--gold);}
-.hero p{font-size:clamp(13px,3.5vw,16px);color:var(--muted);max-width:480px;margin:0 auto 28px;line-height:1.8;}
-.hero p strong{color:var(--white);font-weight:500;}
-.pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
-.pill{background:var(--surface2);border:1px solid var(--border);border-radius:100px;padding:8px 14px;font-size:11px;color:var(--white);}
-.pill.breet-pill{border-color:var(--breet-border);color:var(--breet);background:var(--breet-glow);}
+.hero p{font-size:clamp(13px,3.5vw,15px);color:var(--mute);max-width:460px;margin:0 auto 28px;line-height:1.75;}
+
+/* Region strip — the signature interactive element */
+.region-picker{max-width:760px;margin:0 auto 18px;}
+.region-picker-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mute);margin-bottom:12px;font-weight:600;}
+.region-chips{display:flex;gap:8px;overflow-x:auto;padding:4px 4px 10px;scrollbar-width:none;justify-content:flex-start;}
+.region-chips::-webkit-scrollbar{display:none;}
+@media(min-width:700px){.region-chips{justify-content:center;flex-wrap:wrap;overflow-x:visible;}}
+.rchip{flex-shrink:0;display:flex;align-items:center;gap:8px;background:var(--surface2);border:1.5px solid var(--line);border-radius:100px;padding:9px 16px 9px 9px;cursor:pointer;font-size:13px;color:var(--ink);transition:all 0.2s;white-space:nowrap;}
+.cc-badge{width:24px;height:24px;border-radius:50%;background:var(--surface3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;letter-spacing:0.3px;color:var(--ink);flex-shrink:0;}
+.rchip.active .cc-badge{background:var(--gold);color:#000;border-color:var(--gold);}
+.rchip.active.tier-africa .cc-badge{background:var(--violet);color:#fff;border-color:var(--violet);}
+.rchip.active.tier-intl .cc-badge{background:var(--cyan);color:#000;border-color:var(--cyan);}
+.rchip.active{border-color:var(--gold);background:rgba(227,179,77,0.12);}
+.rchip.active.tier-africa{border-color:var(--violet);background:rgba(131,85,255,0.14);}
+.rchip.active.tier-intl{border-color:var(--cyan);background:rgba(79,209,232,0.12);}
+
+/* Live price readout */
+.live-readout{max-width:520px;margin:6px auto 30px;background:var(--surface2);border:1px solid var(--line);border-radius:22px;padding:22px 26px;position:relative;overflow:hidden;}
+.live-readout::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(131,85,255,0.10),transparent 60%);pointer-events:none;}
+.lr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:relative;}
+.lr-tag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mute);font-weight:600;}
+.lr-tier-badge{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;padding:4px 10px;border-radius:100px;}
+.lr-tier-badge.ng{background:rgba(227,179,77,0.15);color:var(--gold-soft);}
+.lr-tier-badge.africa{background:rgba(131,85,255,0.18);color:#C4B0FF;}
+.lr-tier-badge.intl{background:rgba(79,209,232,0.15);color:var(--cyan);}
+.lr-price{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:clamp(32px,8vw,44px);letter-spacing:-1px;color:var(--ink);position:relative;}
+.lr-coins{font-size:13px;color:var(--mute);margin-top:6px;position:relative;}
+.lr-coins strong{color:var(--gold-soft);}
 
 /* ── MAIN ── */
-.main{max-width:960px;margin:0 auto;padding:36px max(16px,var(--safe-left)) max(80px,calc(60px + var(--safe-bottom))) max(16px,var(--safe-left));}
-.slabel{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:6px;}
-.stitle{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,7vw,50px);letter-spacing:4px;margin-bottom:8px;}
-.ssub{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:28px;}
-
-/* ── BREET HERO BANNER ── */
-.breet-hero{background:linear-gradient(135deg,rgba(0,200,150,0.12) 0%,rgba(0,158,118,0.06) 50%,rgba(123,63,228,0.08) 100%);border:1px solid var(--breet-border);border-radius:20px;padding:28px 24px;margin-bottom:32px;position:relative;overflow:hidden;}
-.breet-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(0,200,150,0.15),transparent 70%);pointer-events:none;}
-.breet-hero-inner{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
-.breet-hero-left{flex:1;min-width:200px;}
-.breet-logo-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.breet-badge{background:var(--breet);color:#000;font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:100px;}
-.breet-x{font-size:13px;color:var(--muted);font-weight:300;}
-.pose-badge{background:var(--purple);color:var(--white);font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:100px;}
-.breet-hero h3{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,5vw,32px);letter-spacing:3px;color:var(--white);margin-bottom:6px;line-height:1.1;}
-.breet-hero h3 span{color:var(--breet);}
-.breet-hero p{font-size:13px;color:var(--muted);line-height:1.7;max-width:440px;}
-.breet-hero-rewards{display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
-.breet-reward-chip{display:flex;align-items:center;gap:10px;background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.2);border-radius:12px;padding:10px 14px;white-space:nowrap;}
-.breet-reward-chip .rc-icon{font-size:18px;flex-shrink:0;}
-.breet-reward-chip .rc-body strong{display:block;font-size:12px;font-weight:600;color:var(--white);}
-.breet-reward-chip .rc-body span{font-size:10px;color:var(--breet);}
+.main{max-width:960px;margin:0 auto;padding:20px max(16px,var(--safe-left)) max(80px,calc(60px + var(--safe-bottom))) max(16px,var(--safe-left));}
+.slabel{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:6px;}
+.stitle{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,7vw,44px);letter-spacing:3px;margin-bottom:8px;}
+.ssub{font-size:13px;color:var(--mute);line-height:1.7;margin-bottom:24px;}
 
 /* ── PAYMENT METHOD SELECTOR ── */
-.pay-method-wrap{margin-bottom:32px;}
-.pay-method-label{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:12px;}
+.pay-method-wrap{margin-bottom:28px;}
+.pay-method-label{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--mute);font-weight:600;margin-bottom:12px;}
 .pay-method-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.pay-tab{background:var(--surface2);border:2px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;transition:all 0.3s;text-align:left;position:relative;overflow:hidden;}
-.pay-tab.active.flw{border-color:var(--purple);background:rgba(123,63,228,0.08);}
+.pay-tab{background:var(--surface2);border:2px solid var(--line);border-radius:16px;padding:16px;cursor:pointer;transition:all 0.3s;text-align:left;}
+.pay-tab.active.flw{border-color:var(--violet);background:rgba(131,85,255,0.09);}
 .pay-tab.active.breet-tab{border-color:var(--breet);background:rgba(0,200,150,0.07);}
 .pay-tab-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
-.pay-tab-name{font-size:13px;font-weight:600;color:var(--white);}
-.pay-tab-check{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all 0.25s;flex-shrink:0;}
-.pay-tab.active.flw .pay-tab-check{background:var(--purple);border-color:var(--purple);}
+.pay-tab-name{font-size:13px;font-weight:600;color:var(--ink);}
+.pay-tab-check{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;transition:all 0.25s;flex-shrink:0;}
+.pay-tab.active.flw .pay-tab-check{background:var(--violet);border-color:var(--violet);}
 .pay-tab.active.breet-tab .pay-tab-check{background:var(--breet);border-color:var(--breet);}
 .pay-tab-check svg{width:10px;height:10px;opacity:0;transition:opacity 0.2s;}
 .pay-tab.active .pay-tab-check svg{opacity:1;}
-.pay-tab-desc{font-size:11px;color:var(--muted);line-height:1.6;}
-.pay-tab-bonus{display:inline-flex;align-items:center;gap:5px;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.25);border-radius:100px;padding:3px 10px;font-size:10px;font-weight:600;color:var(--breet);margin-top:8px;}
-.pay-tab-methods{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
-.pm-chip{background:var(--surface3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:9px;color:var(--muted);letter-spacing:1px;}
-.breet-cashback-note{background:rgba(0,200,150,0.07);border:1px solid rgba(0,200,150,0.2);border-radius:12px;padding:12px 16px;margin-top:10px;font-size:12px;color:var(--muted);line-height:1.65;}
-.breet-cashback-note strong{color:var(--breet);}
-.breet-cashback-note .ex{color:rgba(255,255,255,0.6);font-size:11px;margin-top:4px;display:block;}
-
-/* rate banner */
-.rate-banner{background:linear-gradient(135deg,rgba(123,63,228,0.08),rgba(212,168,67,0.06));border:1px solid rgba(212,168,67,0.2);border-radius:14px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
-.rate-info{font-size:13px;color:var(--muted);}
-.rate-info strong{color:var(--white);}
-.rate-badge{background:rgba(212,168,67,0.12);border:1px solid rgba(212,168,67,0.3);border-radius:100px;padding:6px 16px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:var(--gold);}
+.pay-tab-desc{font-size:11px;color:var(--mute);line-height:1.6;}
 
 /* custom amount */
-.custom-box{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:24px 22px;margin-bottom:44px;position:relative;}
-.custom-box h3{font-size:15px;font-weight:500;margin-bottom:4px;}
-.custom-box p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
-.naira-row{display:flex;align-items:center;background:var(--surface3);border:1px solid rgba(123,63,228,0.3);border-radius:12px;overflow:hidden;margin-bottom:10px;transition:border-color 0.3s;}
-.naira-row:focus-within{border-color:var(--gold);}
-.naira-pfx{padding:0 14px;font-size:18px;font-weight:600;color:var(--gold);border-right:1px solid var(--border);height:52px;display:flex;align-items:center;background:rgba(212,168,67,0.08);flex-shrink:0;}
-.naira-inp{background:transparent;border:none;outline:none;color:var(--white);font-size:20px;font-weight:500;font-family:'DM Sans',sans-serif;padding:0 14px;width:100%;height:52px;-webkit-appearance:none;}
-.naira-inp::placeholder{color:var(--muted);font-size:14px;font-weight:300;}
-.cprev{font-size:12px;color:var(--muted);min-height:18px;margin-bottom:4px;}
-.cprev strong{color:var(--gold-light);}
-.breet-preview{font-size:11px;color:var(--breet);min-height:16px;margin-bottom:12px;display:none;}
-.breet-preview.show{display:block;}
+.custom-box{background:var(--surface2);border:1px solid var(--line);border-radius:20px;padding:24px 22px;margin-bottom:36px;}
+.custom-box h3{font-size:15px;font-weight:600;margin-bottom:4px;}
+.custom-box p{font-size:13px;color:var(--mute);line-height:1.6;margin-bottom:16px;}
+.amt-row{display:flex;align-items:center;background:var(--surface3);border:1px solid rgba(131,85,255,0.3);border-radius:12px;overflow:hidden;margin-bottom:10px;transition:border-color 0.3s;}
+.amt-row:focus-within{border-color:var(--gold);}
+.amt-pfx{padding:0 14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:17px;color:var(--gold);border-right:1px solid var(--line);height:52px;display:flex;align-items:center;background:rgba(227,179,77,0.08);flex-shrink:0;}
+.amt-inp{background:transparent;border:none;outline:none;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:600;padding:0 14px;width:100%;height:52px;-webkit-appearance:none;}
+.amt-inp::placeholder{color:var(--mute);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:300;}
+.cprev{font-size:12px;color:var(--mute);min-height:36px;margin-bottom:12px;line-height:1.6;}
+.cprev strong{color:var(--gold-soft);}
+.cprev .bonus-tag{display:inline-block;background:rgba(131,85,255,0.15);color:#C4B0FF;border-radius:100px;padding:2px 8px;font-size:10px;font-weight:700;margin-left:4px;}
 .cbuy-btn{width:100%;padding:15px;border:none;border-radius:12px;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;-webkit-appearance:none;}
-.cbuy-btn.flw-btn{background:linear-gradient(135deg,var(--gold-light),var(--gold-dark));color:#000;}
-.cbuy-btn.breet-btn{background:linear-gradient(135deg,var(--breet),var(--breet-deep));color:#000;}
+.cbuy-btn.flw-btn{background:linear-gradient(135deg,var(--gold-soft),var(--gold-deep));color:#000;}
+.cbuy-btn.breet-btn{background:linear-gradient(135deg,var(--breet),#009E76);color:#000;}
 .cbuy-btn:active{transform:scale(0.98);}
 
-/* ── PACKAGES ── */
-.pkgs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px;}
-.pkg{background:var(--surface2);border:1px solid var(--border);border-radius:22px;overflow:hidden;cursor:pointer;transition:all 0.35s cubic-bezier(0.23,1,0.32,1);position:relative;display:flex;flex-direction:column;}
-.pkg.value{border-color:var(--gold);box-shadow:0 8px 32px rgba(212,168,67,0.12);}
-.pop-tag{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:2;background:linear-gradient(135deg,var(--gold-light),var(--gold-dark));color:#000;font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:100px;white-space:nowrap;box-shadow:0 4px 14px rgba(212,168,67,0.4);}
-.breet-cashback-tag{position:absolute;top:44px;left:50%;transform:translateX(-50%);z-index:2;background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.35);color:var(--breet);font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:100px;white-space:nowrap;display:none;}
-.pkg.value .breet-cashback-tag{top:44px;}
-.pkg:not(.value) .breet-cashback-tag{top:12px;}
-body.breet-mode .breet-cashback-tag{display:block;}
-body.breet-mode .pop-tag{top:44px;}
-body.breet-mode .pkg:not(.value) .pop-tag{display:none;}
-.pkg-stage{width:100%;aspect-ratio:1/0.8;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:16px;}
-.pkg.starter .pkg-stage{background:radial-gradient(ellipse at 50% 75%,rgba(212,168,67,0.09) 0%,transparent 70%),linear-gradient(160deg,#131318,#0e0e14);}
-.pkg.value   .pkg-stage{background:radial-gradient(ellipse at 50% 75%,rgba(212,168,67,0.18) 0%,transparent 70%),linear-gradient(160deg,#181410,#0f0f16);}
-.pkg.mega    .pkg-stage{background:radial-gradient(ellipse at 50% 75%,rgba(212,168,67,0.22) 0%,transparent 70%),linear-gradient(160deg,#181510,#100f18);}
-body.breet-mode .pkg.starter .pkg-stage{background:radial-gradient(ellipse at 50% 75%,rgba(0,200,150,0.08) 0%,transparent 70%),linear-gradient(160deg,#0e1512,#0a0f0e);}
-body.breet-mode .pkg.value   .pkg-stage{background:radial-gradient(ellipse at 50% 75%,rgba(0,200,150,0.16) 0%,transparent 70%),linear-gradient(160deg,#0e1a16,#0a100f);}
-body.breet-mode .pkg.mega    .pkg-stage{background:radial-gradient(ellipse at 50% 75%,rgba(0,200,150,0.2) 0%,transparent 70%),linear-gradient(160deg,#0f1c18,#0b1210);}
-.pkg-stage::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(212,168,67,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(212,168,67,0.04) 1px,transparent 1px);background-size:28px 28px;mask-image:radial-gradient(ellipse at center bottom,black 30%,transparent 80%);-webkit-mask-image:radial-gradient(ellipse at center bottom,black 30%,transparent 80%);}
-.pkg-stage::after{content:'';position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);width:70%;height:50px;border-radius:50%;filter:blur(18px);opacity:0.45;transition:opacity 0.35s;}
-.pkg.starter .pkg-stage::after{background:rgba(212,168,67,0.3);}
-.pkg.value   .pkg-stage::after{background:rgba(212,168,67,0.5);}
-.pkg.mega    .pkg-stage::after{background:rgba(212,168,67,0.55);}
-body.breet-mode .pkg.starter .pkg-stage::after{background:rgba(0,200,150,0.3);}
-body.breet-mode .pkg.value   .pkg-stage::after{background:rgba(0,200,150,0.5);}
-body.breet-mode .pkg.mega    .pkg-stage::after{background:rgba(0,200,150,0.55);}
-body.breet-mode .pkg.value{border-color:var(--breet);box-shadow:0 8px 32px rgba(0,200,150,0.12);}
-.pkg-coin-img{position:relative;z-index:1;display:block;transition:transform 0.4s cubic-bezier(0.23,1,0.32,1);filter:drop-shadow(0 10px 24px rgba(0,0,0,0.7));}
-.pkg.starter .pkg-coin-img{width:48%;max-width:120px;}
-.pkg.value   .pkg-coin-img{width:78%;max-width:200px;}
-.pkg.mega    .pkg-coin-img{width:92%;max-width:260px;}
-.pkg-divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);}
-.pkg-body{padding:18px 18px 22px;flex:1;display:flex;flex-direction:column;}
-.pkg-name{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);font-weight:600;display:block;margin-bottom:4px;}
-.pkg-coins-row{display:flex;align-items:baseline;gap:4px;margin-bottom:4px;}
-.pkg-coins{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,6vw,48px);color:var(--gold);letter-spacing:2px;line-height:1;}
-.pkg-coins-lbl{font-size:11px;color:var(--muted);letter-spacing:1px;}
-.pkg-bonus{font-size:11px;color:#9B6FEC;margin-bottom:6px;font-weight:500;min-height:16px;display:flex;align-items:center;gap:4px;}
-.pkg.mega .pkg-bonus{color:var(--gold-light);}
-.pkg-breet-bonus{font-size:10px;color:var(--breet);font-weight:600;margin-bottom:10px;min-height:16px;display:none;align-items:center;gap:4px;}
-body.breet-mode .pkg-breet-bonus{display:flex;}
-body.breet-mode .pkg-bonus{margin-bottom:0;}
-.pkg-price-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:6px;}
-.pkg-price{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,5vw,34px);letter-spacing:1px;line-height:1;}
-.pkg.starter .pkg-price{color:var(--white);}
-.pkg.value   .pkg-price{color:var(--gold);}
-.pkg.mega    .pkg-price{color:var(--gold-light);}
-body.breet-mode .pkg.value .pkg-price{color:var(--breet);}
-.pkg-per{font-size:10px;color:var(--muted);font-weight:300;margin-bottom:3px;}
-.pkg-rate{font-size:9px;color:var(--muted);border:1px solid var(--border);border-radius:100px;padding:3px 8px;white-space:nowrap;}
-.pkg-btn{width:100%;padding:13px;border:none;border-radius:11px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;margin-top:auto;-webkit-appearance:none;}
-.pkg.starter .pkg-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--white);}
-.pkg.value   .pkg-btn{background:linear-gradient(135deg,var(--gold-light),var(--gold-dark));color:#000;box-shadow:0 4px 18px rgba(212,168,67,0.3);}
-.pkg.mega    .pkg-btn{background:linear-gradient(135deg,rgba(212,168,67,0.18),rgba(212,168,67,0.08));border:1px solid rgba(212,168,67,0.4);color:var(--gold-light);}
-body.breet-mode .pkg.starter .pkg-btn{background:rgba(0,200,150,0.08);border:1px solid rgba(0,200,150,0.25);color:var(--breet);}
-body.breet-mode .pkg.value   .pkg-btn{background:linear-gradient(135deg,var(--breet),var(--breet-deep));color:#000;box-shadow:0 4px 18px rgba(0,200,150,0.3);}
-body.breet-mode .pkg.mega    .pkg-btn{background:linear-gradient(135deg,rgba(0,200,150,0.18),rgba(0,200,150,0.08));border:1px solid rgba(0,200,150,0.4);color:var(--breet);}
+/* ── PACKAGES (5-tier ladder) ── */
+.pkgs{display:flex;gap:14px;overflow-x:auto;padding:6px 4px 18px;margin-bottom:8px;scrollbar-width:none;}
+.pkgs::-webkit-scrollbar{display:none;}
+@media(min-width:900px){.pkgs{display:grid;grid-template-columns:repeat(5,1fr);overflow-x:visible;}}
+.pkg{flex:0 0 68vw;max-width:230px;background:var(--surface2);border:1px solid var(--line);border-radius:20px;overflow:hidden;cursor:pointer;transition:all 0.3s cubic-bezier(0.23,1,0.32,1);position:relative;display:flex;flex-direction:column;}
+@media(min-width:900px){.pkg{flex:none;max-width:none;}}
+.pkg.popular{border-color:var(--gold);box-shadow:0 8px 28px rgba(227,179,77,0.12);}
+.pkg-pop-tag{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:2;background:linear-gradient(135deg,var(--gold-soft),var(--gold-deep));color:#000;font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border-radius:100px;white-space:nowrap;}
+.pkg-head{padding:18px 16px 0;}
+.pkg-name{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mute);font-weight:700;}
+.pkg-coins-row{display:flex;align-items:baseline;gap:6px;margin:6px 0 4px;}
+.pkg-coins{font-family:'JetBrains Mono',monospace;font-size:clamp(30px,6vw,38px);color:var(--gold-soft);letter-spacing:-1px;line-height:1;font-weight:700;}
+.pkg-coins-lbl{font-size:10px;color:var(--mute);letter-spacing:0.5px;}
+.pkg-bonus{font-size:11px;color:#B79CFF;font-weight:600;min-height:16px;margin-bottom:12px;}
+.pkg-div{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:0 16px;}
+.pkg-body{padding:14px 16px 18px;flex:1;display:flex;flex-direction:column;}
+.pkg-price{font-family:'JetBrains Mono',monospace;font-size:clamp(22px,5vw,28px);letter-spacing:-0.5px;line-height:1;color:var(--ink);margin-bottom:4px;font-weight:700;}
+.pkg-fee-note{font-size:10px;color:var(--mute2);margin-bottom:14px;}
+.pkg-btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;margin-top:auto;-webkit-appearance:none;background:linear-gradient(135deg,var(--gold-soft),var(--gold-deep));color:#000;}
+.pkg:not(.popular) .pkg-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--ink);}
 .pkg-btn:active{transform:scale(0.97);}
 
-/* ── BREET REWARDS SECTION ── */
-.breet-rewards-section{background:linear-gradient(135deg,rgba(0,200,150,0.07),rgba(0,158,118,0.04),rgba(123,63,228,0.06));border:1px solid var(--breet-border);border-radius:22px;padding:32px 24px;margin-bottom:44px;position:relative;overflow:hidden;}
-.breet-rewards-section::before{content:'';position:absolute;top:-80px;right:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(0,200,150,0.08),transparent 70%);pointer-events:none;}
-.breet-section-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
-.breet-section-header .breet-badge{font-size:10px;}
-.breet-section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,5vw,36px);letter-spacing:3px;margin-bottom:6px;}
-.breet-section-title span{color:var(--breet);}
-.breet-section-sub{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:28px;max-width:560px;}
-.breet-rewards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
-.breet-reward-card{background:rgba(0,0,0,0.25);border:1px solid rgba(0,200,150,0.15);border-radius:16px;padding:20px 18px;position:relative;overflow:hidden;transition:border-color 0.3s;}
-.breet-reward-card:hover{border-color:rgba(0,200,150,0.35);}
-.breet-reward-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--breet),transparent);}
-.brc-icon{font-size:26px;margin-bottom:12px;}
-.brc-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:6px;}
-.brc-desc{font-size:12px;color:var(--muted);line-height:1.7;}
-.brc-highlight{display:inline-block;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.25);border-radius:8px;padding:8px 12px;margin-top:12px;font-size:12px;color:var(--breet);font-weight:600;line-height:1.5;}
-.brc-highlight .bh-ex{display:block;font-size:10px;color:var(--muted);font-weight:400;margin-top:2px;}
-.breet-cta-row{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;}
-.breet-switch-btn{flex:1;padding:14px 20px;background:linear-gradient(135deg,var(--breet),var(--breet-deep));color:#000;border:none;border-radius:12px;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;min-width:160px;}
-.breet-switch-btn:active{transform:scale(0.98);}
-.breet-learn-btn{flex:1;padding:14px 20px;background:transparent;color:var(--breet);border:1px solid var(--breet-border);border-radius:12px;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;min-width:140px;}
-
 /* ── TRUST ── */
-.trust{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:center;padding:24px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:44px;}
-.titem{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);}
+.trust{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:center;padding:22px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:40px;}
+.titem{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--mute);}
 .tdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
 .tdot.g{background:var(--gold);}
-.tdot.p{background:var(--purple);}
-.tdot.b{background:var(--breet);}
+.tdot.p{background:var(--violet);}
+.tdot.c{background:var(--cyan);}
 
 /* ── WHY ── */
-.why-section{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:32px 24px;margin-bottom:44px;}
-.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:28px;}
-.wicon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
-.wicon.p{background:rgba(123,63,228,0.15);}
-.wicon.g{background:rgba(212,168,67,0.12);}
-.wicon.w{background:rgba(75,31,168,0.15);}
-.wicon.br{background:rgba(0,200,150,0.12);}
-.wicon svg{width:20px;height:20px;}
-.wcard h3{font-size:13px;font-weight:500;margin-bottom:7px;}
-.wcard p{font-size:12px;color:var(--muted);line-height:1.75;}
+.why-section{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:30px 24px;margin-bottom:40px;}
+.why-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;margin-top:24px;}
+@media(min-width:640px){.why-grid{grid-template-columns:repeat(4,1fr);}}
+.wicon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.wicon.p{background:rgba(131,85,255,0.16);}
+.wicon.g{background:rgba(227,179,77,0.14);}
+.wicon.c{background:rgba(79,209,232,0.14);}
+.wicon svg{width:18px;height:18px;}
+.wcard h3{font-size:12.5px;font-weight:600;margin-bottom:6px;}
+.wcard p{font-size:11.5px;color:var(--mute);line-height:1.7;}
 
 /* ── HOW ── */
-.how-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border-radius:18px;overflow:hidden;margin-bottom:44px;}
-.hstep{background:var(--surface2);padding:26px 22px;position:relative;}
-.hline{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--gold));}
-.hnum{font-family:'Bebas Neue',sans-serif;font-size:48px;color:rgba(123,63,228,0.1);line-height:1;margin-bottom:12px;}
-.htitle{font-size:13px;font-weight:500;margin-bottom:7px;}
-.hdesc{font-size:12px;color:var(--muted);line-height:1.7;}
+.how-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border-radius:18px;overflow:hidden;margin-bottom:40px;}
+.hstep{background:var(--surface2);padding:24px 20px;position:relative;}
+.hline{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--violet),var(--gold));}
+.hnum{font-family:'JetBrains Mono',monospace;font-size:38px;color:rgba(131,85,255,0.15);line-height:1;margin-bottom:10px;font-weight:700;}
+.htitle{font-size:13px;font-weight:600;margin-bottom:6px;}
+.hdesc{font-size:11.5px;color:var(--mute);line-height:1.7;}
 
 /* ── MODAL ── */
-.modal-overlay{position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+.modal-overlay{position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;pointer-events:none;transition:opacity 0.3s;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
-.modal-sheet{background:var(--surface);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:640px;max-height:85vh;overflow-y:auto;padding:28px 24px max(32px,calc(20px + var(--safe-bottom)));-webkit-overflow-scrolling:touch;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.23,1,0.32,1);}
+.modal-sheet{background:var(--surface);border:1px solid var(--line);border-radius:24px 24px 0 0;width:100%;max-width:640px;max-height:85vh;overflow-y:auto;padding:28px 24px max(32px,calc(20px + var(--safe-bottom)));-webkit-overflow-scrolling:touch;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.23,1,0.32,1);}
 .modal-overlay.open .modal-sheet{transform:translateY(0);}
-.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;}
+.modal-handle{width:36px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 20px;}
 .modal-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;margin-bottom:6px;}
-.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
-.modal-body{font-size:13px;color:var(--muted);line-height:1.85;}
-.modal-body h4{font-size:13px;font-weight:600;color:var(--white);margin:18px 0 6px;}
+.modal-sub{font-size:12px;color:var(--mute);margin-bottom:20px;}
+.modal-body{font-size:13px;color:var(--mute);line-height:1.85;}
+.modal-body h4{font-size:13px;font-weight:700;color:var(--ink);margin:18px 0 6px;}
 .modal-body h4:first-child{margin-top:0;}
 .modal-body a{color:var(--gold);text-decoration:none;}
-.modal-close{margin-top:24px;width:100%;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;}
+.modal-body table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;font-family:'JetBrains Mono',monospace;}
+.modal-body table th,.modal-body table td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);}
+.modal-body table th{color:var(--ink);font-weight:700;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;font-family:'DM Sans',sans-serif;}
+.modal-close{margin-top:24px;width:100%;padding:14px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;color:var(--mute);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;}
 
 /* ── TOAST ── */
-#toast{position:fixed;bottom:max(28px,calc(20px + var(--safe-bottom)));left:50%;transform:translateX(-50%) translateY(120px);border-radius:14px;padding:14px 24px;font-size:13px;font-weight:500;z-index:7000;transition:transform 0.4s;white-space:nowrap;pointer-events:none;}
-#toast.success{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.4);color:#86EFAC;}
-#toast.breet-toast{background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.4);color:var(--breet);}
+#toast{position:fixed;bottom:max(28px,calc(20px + var(--safe-bottom)));left:50%;transform:translateX(-50%) translateY(120px);border-radius:14px;padding:14px 24px;font-size:13px;font-weight:600;z-index:7000;transition:transform 0.4s;white-space:nowrap;pointer-events:none;}
+#toast.success{background:rgba(34,197,94,0.14);border:1px solid rgba(34,197,94,0.4);color:#86EFAC;}
+#toast.breet-toast{background:rgba(0,200,150,0.14);border:1px solid rgba(0,200,150,0.4);color:var(--breet);}
 #toast.show{transform:translateX(-50%) translateY(0);}
 
 /* ── FOOTER ── */
-footer{background:var(--surface);border-top:1px solid var(--border);padding:24px max(20px,var(--safe-left)) max(28px,calc(16px + var(--safe-bottom))) max(20px,var(--safe-left));text-align:center;}
+footer{background:var(--surface);border-top:1px solid var(--line);padding:24px max(20px,var(--safe-left)) max(28px,calc(16px + var(--safe-bottom))) max(20px,var(--safe-left));text-align:center;}
 .footer-inner{max-width:960px;margin:0 auto;}
-footer p{font-size:11px;color:var(--muted);line-height:1.9;margin-bottom:16px;}
+footer p{font-size:11px;color:var(--mute);line-height:1.9;margin-bottom:16px;}
 .flinks{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
-.flinks a{font-size:12px;color:var(--muted);text-decoration:none;padding:2px 0;transition:color 0.2s;cursor:pointer;}
-.flinks a:hover{color:var(--white);}
-.footer-breet{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:11px;color:var(--muted);}
-.footer-breet .breet-badge{font-size:8px;padding:3px 8px;}
+.flinks a{font-size:12px;color:var(--mute);text-decoration:none;padding:2px 0;transition:color 0.2s;cursor:pointer;}
+.flinks a:hover{color:var(--ink);}
 
-/* ── RESPONSIVE ── */
-@media(max-width:760px){
-  .pkgs{grid-template-columns:1fr 1fr;gap:14px;}
-  .pkg.mega{grid-column:1/-1;}
-  .pkg.mega .pkg-stage{aspect-ratio:2/0.8;}
-  .pkg.mega .pkg-coin-img{width:52%;max-width:260px;}
-  .why-grid{grid-template-columns:1fr 1fr;}
-  .how-strip{grid-template-columns:1fr;gap:2px;}
-  .nav-user{display:none;}
-  .breet-rewards-grid{grid-template-columns:1fr;}
-  .breet-hero-inner{flex-direction:column;}
-  .breet-hero-rewards{flex-direction:row;flex-wrap:wrap;}
-  .pay-method-tabs{grid-template-columns:1fr 1fr;}
+@media(hover:hover){
+  .pkg:hover{transform:translateY(-5px);box-shadow:0 20px 44px rgba(0,0,0,0.5);}
+  .rchip:hover{border-color:var(--gold);}
+  .logout-btn:hover{border-color:rgba(240,89,107,0.5);color:#FCA5A5;}
 }
 @media(max-width:540px){
-  .pkgs{grid-template-columns:1fr 1fr;gap:12px;}
-  .pkg-body{padding:14px 14px 18px;}
-  .pkg-btn{font-size:9px;padding:11px;}
-  .why-section{padding:24px 18px;}
-  .why-grid{grid-template-columns:1fr;}
+  .why-grid{grid-template-columns:1fr 1fr;}
+  .how-strip{grid-template-columns:1fr;}
+  .nav-user{display:none;}
   .login-card{padding:28px 22px;}
   .pay-method-tabs{grid-template-columns:1fr;}
-  .breet-hero-rewards{flex-direction:column;}
-}
-@media(max-width:400px){
-  .pkgs{grid-template-columns:1fr;}
-  .pkg.mega{grid-column:auto;}
-  .hero h1{font-size:56px;}
-}
-@media(hover:hover){
-  .pkg:hover{transform:translateY(-6px);box-shadow:0 24px 52px rgba(0,0,0,0.55);}
-  .pkg:hover .pkg-stage::after{opacity:0.8;}
-  .pkg:hover .pkg-coin-img{transform:translateY(-6px) scale(1.04);filter:drop-shadow(0 18px 36px rgba(0,0,0,0.8)) drop-shadow(0 0 20px rgba(212,168,67,0.22));}
-  .logout-btn:hover{border-color:rgba(239,68,68,0.5);color:#FCA5A5;}
-  .breet-switch-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,200,150,0.3);}
 }
 </style>
 </head>
@@ -344,7 +264,12 @@ footer p{font-size:11px;color:var(--muted);line-height:1.9;margin-bottom:16px;}
       <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
     </div>
     <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In to Pose Shop</button>
-    <div class="login-note">🔒 Secured login · Coins appear in the app immediately<br>Only existing Pose users can sign in here</div>
+    <div class="login-divider"><span>Or</span></div>
+    <button class="google-btn" id="googleBtn" onclick="doGoogleLogin()">
+      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.1-5l-6.5-5.4C29.6 35.5 26.9 36.5 24 36.5c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.6 39.7 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4.1 5.6l6.5 5.4C41.4 35.6 44 30.2 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
+      Continue with Google
+    </button>
+    <div class="login-note"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" style="vertical-align:-1px;margin-right:5px;"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="1.8"/></svg>Secured login · Coins appear in the app immediately<br>Only existing Pose users can sign in here</div>
   </div>
 </div>
 
@@ -356,9 +281,12 @@ footer p{font-size:11px;color:var(--muted);line-height:1.9;margin-bottom:16px;}
     <div class="logo-shop">SHOP</div>
   </a>
   <div class="nav-right">
+    <div class="nav-region" onclick="document.getElementById('regionPicker').scrollIntoView({behavior:'smooth',block:'center'})">
+      <span class="cc-badge" id="navFlag" style="width:18px;height:18px;font-size:8px;">NG</span><span id="navCurrency">NGN</span>
+    </div>
     <div class="nav-balance">
       <span class="bnum" id="navCoins">—</span>
-      <span class="blbl">🪙 Coins</span>
+      <span class="blbl" style="color:var(--gold);display:flex;align-items:center;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M9 12h6M12 9v6" stroke="currentColor" stroke-width="1.6"/></svg></span>
     </div>
     <div class="nav-user">
       <div class="nav-avatar" id="navAvatar">?</div>
@@ -370,52 +298,31 @@ footer p{font-size:11px;color:var(--muted);line-height:1.9;margin-bottom:16px;}
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-badge"><span class="ldot"></span> Official Coin Store</div>
+  <div class="hero-badge"><span class="ldot"></span> Official Coin Store · Priced For Where You Are</div>
   <h1>POSE<br><em>COINS</em></h1>
-  <p><strong>Watch what you love. Support who you love.</strong><br>Pose Coins unlock exclusive videos and content from your favourite creators — and make sure they get paid for every moment they entertain you.</p>
-  <div class="pills">
-    <div class="pill">Unlock premium content</div>
-    <div class="pill">Coins never expire</div>
-    <div class="pill">Creators earn instantly</div>
-    <div class="pill breet-pill">💎 10% Breet cashback</div>
+  <p><strong style="color:var(--ink);font-weight:500;">Watch what you love. Support who you love.</strong><br>Pick your country below and every price on this page updates instantly to what you'd actually pay.</p>
+
+  <div class="region-picker" id="regionPicker">
+    <div class="region-picker-label">Where are you buying from?</div>
+    <div class="region-chips" id="regionChips"></div>
+  </div>
+
+  <div class="live-readout">
+    <div class="lr-top">
+      <span class="lr-tag">Popular Pack, right now</span>
+      <span class="lr-tier-badge" id="lrTierBadge">Nigeria</span>
+    </div>
+    <div class="lr-price mono" id="lrPrice">₦1,560</div>
+    <div class="lr-coins" id="lrCoins">63 coins total <strong>(60 + 3 bonus)</strong></div>
   </div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-  <!-- BREET PARTNERSHIP BANNER -->
-  <div class="breet-hero">
-    <div class="breet-hero-inner">
-      <div class="breet-hero-left">
-        <div class="breet-logo-row">
-          <div class="breet-badge">BREET</div>
-          <div class="breet-x">×</div>
-          <div class="pose-badge">POSE</div>
-        </div>
-        <h3>PAY WITH BREET.<br><span>GET REWARDED.</span></h3>
-        <p>Pose has partnered with Breet to bring you crypto and stablecoin payments — with real rewards every time you pay. Switch to Breet at checkout and start earning bonus Pose Coins automatically.</p>
-      </div>
-      <div class="breet-hero-rewards">
-        <div class="breet-reward-chip">
-          <div class="rc-icon">💸</div>
-          <div class="rc-body"><strong>10% Cashback</strong><span>Every Breet purchase</span></div>
-        </div>
-        <div class="breet-reward-chip">
-          <div class="rc-icon">🎁</div>
-          <div class="rc-body"><strong>First Deposit Bonus</strong><span>One-time welcome reward</span></div>
-        </div>
-        <div class="breet-reward-chip">
-          <div class="rc-icon">🌍</div>
-          <div class="rc-body"><strong>Global Payments</strong><span>Crypto & stablecoin support</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="slabel">Pose Shop</div>
   <div class="stitle">BUY <span style="color:var(--gold)">POSE COINS</span></div>
-  <div class="ssub">Choose a package or enter any amount. Rate: ₦25 = 1 Pose Coin. Minimum ₦100.</div>
+  <div class="ssub" id="rateSummary">Loading pricing for your region…</div>
 
   <!-- PAYMENT METHOD SELECTOR -->
   <div class="pay-method-wrap">
@@ -423,271 +330,79 @@ footer p{font-size:11px;color:var(--muted);line-height:1.9;margin-bottom:16px;}
     <div class="pay-method-tabs">
       <div class="pay-tab flw active" id="tabFlw" onclick="selectPayMethod('flw')">
         <div class="pay-tab-top">
-          <div class="pay-tab-name">💳 Pay with Card / Bank</div>
-          <div class="pay-tab-check">
-            <svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+          <div class="pay-tab-name"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" style="vertical-align:-2px;margin-right:5px;"><rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M2 10h20" stroke="currentColor" stroke-width="1.8"/></svg>Card / Bank</div>
+          <div class="pay-tab-check"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
-        <div class="pay-tab-desc">Nigerian bank card, USSD, bank transfer or mobile money. Fast and familiar.</div>
-        <div class="pay-tab-methods">
-          <div class="pm-chip">CARD</div>
-          <div class="pm-chip">USSD</div>
-          <div class="pm-chip">BANK TRANSFER</div>
-          <div class="pm-chip">MOBILE MONEY</div>
-        </div>
+        <div class="pay-tab-desc">Card, USSD, bank transfer or mobile money, charged in your local currency.</div>
       </div>
       <div class="pay-tab breet-tab" id="tabBreet" onclick="selectPayMethod('breet')">
         <div class="pay-tab-top">
-          <div class="pay-tab-name">💎 Pay with Breet</div>
-          <div class="pay-tab-check">
-            <svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+          <div class="pay-tab-name"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" style="vertical-align:-2px;margin-right:5px;"><path d="M3 9L12 3l9 6-9 12-9-12z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M3 9h18M9 9l3 12 3-12" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Crypto (Breet)</div>
+          <div class="pay-tab-check"><svg viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         </div>
-        <div class="pay-tab-desc">Crypto, stablecoin & global payments. Earn rewards every time you use Breet.</div>
-        <div class="pay-tab-methods">
-          <div class="pm-chip">CRYPTO</div>
-          <div class="pm-chip">STABLECOIN</div>
-          <div class="pm-chip">GLOBAL</div>
-        </div>
-        <div class="pay-tab-bonus">✦ 10% cashback in Pose Coins</div>
+        <div class="pay-tab-desc">USDT, USDC, Bitcoin, Ethereum — works from anywhere, no local bank needed.</div>
       </div>
     </div>
-    <div class="breet-cashback-note" id="breetCashbackNote" style="display:none;">
-      <strong>You have Breet selected.</strong> Every purchase automatically earns <strong>10% cashback</strong> as bonus Pose Coins — credited instantly after payment.<br>
-      <span class="ex">Example: Buy the ₦10,000 Mega Pack → receive 400 bonus coins (worth ₦10,000 cashback value) on top of your 480 coins.</span>
-    </div>
-  </div>
-
-  <div class="rate-banner">
-    <div class="rate-info"><strong>Fixed Rate</strong> — no hidden charges, no conversion fees</div>
-    <div class="rate-badge">₦25 = 1 Pose Coin 🪙</div>
   </div>
 
   <!-- CUSTOM AMOUNT -->
   <div class="custom-box">
     <h3>Enter Your Own Amount</h3>
-    <p>Type any Naira amount from ₦100 and see exactly how many coins you'll receive before paying.</p>
-    <div class="naira-row">
-      <div class="naira-pfx">₦</div>
-      <input class="naira-inp" type="number" id="customAmt" placeholder="e.g. 1,000" min="100" inputmode="numeric" oninput="previewCustom(this.value)">
+    <p id="customBoxHint">Type any amount and see exactly how many coins you'll receive before paying.</p>
+    <div class="amt-row">
+      <div class="amt-pfx" id="amtPfx">₦</div>
+      <input class="amt-inp" type="number" id="customAmt" placeholder="e.g. 1000" min="0" inputmode="decimal" oninput="previewCustom(this.value)">
     </div>
     <div class="cprev" id="cprev"></div>
-    <div class="breet-preview" id="breetPreview"></div>
     <button class="cbuy-btn flw-btn" id="customBuyBtn" onclick="buyCustom()">Pay & Get Coins →</button>
   </div>
 
   <!-- PACKAGES -->
-  <div class="pkgs">
-
-    <!-- STARTER -->
-    <div class="pkg starter" onclick="buyPkg(20,500,'Starter Pack — 20 Pose Coins')">
-      <div class="pkg-stage">
-        <img class="pkg-coin-img" src="https://i.ibb.co/RGZpqn69/posecoin1-removebg-preview.png" alt="20 Pose Coins"/>
-      </div>
-      <div class="pkg-divider"></div>
-      <div class="pkg-body">
-        <span class="pkg-name">Starter Pack</span>
-        <div class="pkg-coins-row">
-          <div class="pkg-coins">20</div>
-          <div class="pkg-coins-lbl">coins</div>
-        </div>
-        <div class="pkg-bonus"></div>
-        <div class="pkg-breet-bonus">✦ +2 bonus coins (Breet cashback)</div>
-        <div class="pkg-price-row">
-          <div>
-            <div class="pkg-price">₦500</div>
-            <div class="pkg-per">per pack</div>
-          </div>
-          <div class="pkg-rate">₦25 / coin</div>
-        </div>
-        <button class="pkg-btn" id="btnStarter">Buy Now →</button>
-      </div>
-      <div class="breet-cashback-tag">✦ 10% Cashback</div>
-    </div>
-
-    <!-- VALUE -->
-    <div class="pkg value" onclick="buyPkg(120,2500,'Value Pack — 120 Pose Coins')">
-      <div class="pop-tag">⭐ Most Popular</div>
-      <div class="pkg-stage">
-        <img class="pkg-coin-img" src="https://i.ibb.co/svwS7Jp8/posecoin2-removebg-preview.png" alt="120 Pose Coins"/>
-      </div>
-      <div class="pkg-divider"></div>
-      <div class="pkg-body">
-        <span class="pkg-name">Value Pack</span>
-        <div class="pkg-coins-row">
-          <div class="pkg-coins">120</div>
-          <div class="pkg-coins-lbl">coins</div>
-        </div>
-        <div class="pkg-bonus">🔥 Includes 20 free bonus coins</div>
-        <div class="pkg-breet-bonus">✦ +12 extra coins (Breet cashback)</div>
-        <div class="pkg-price-row">
-          <div>
-            <div class="pkg-price">₦2,500</div>
-            <div class="pkg-per">per pack</div>
-          </div>
-          <div class="pkg-rate">₦25 / coin</div>
-        </div>
-        <button class="pkg-btn" id="btnValue">Buy Now →</button>
-      </div>
-      <div class="breet-cashback-tag">✦ 10% Cashback</div>
-    </div>
-
-    <!-- MEGA -->
-    <div class="pkg mega" onclick="buyPkg(480,10000,'Mega Pack — 480 Pose Coins')">
-      <div class="pkg-stage">
-        <img class="pkg-coin-img" src="https://i.ibb.co/QjxFb7Lq/posecoin3-removebg-preview.png" alt="480 Pose Coins"/>
-      </div>
-      <div class="pkg-divider"></div>
-      <div class="pkg-body">
-        <span class="pkg-name">Mega Pack</span>
-        <div class="pkg-coins-row">
-          <div class="pkg-coins">480</div>
-          <div class="pkg-coins-lbl">coins</div>
-        </div>
-        <div class="pkg-bonus">💎 Includes 80 free bonus coins</div>
-        <div class="pkg-breet-bonus">✦ +48 extra coins (Breet cashback)</div>
-        <div class="pkg-price-row">
-          <div>
-            <div class="pkg-price">₦10,000</div>
-            <div class="pkg-per">per pack</div>
-          </div>
-          <div class="pkg-rate">₦25 / coin</div>
-        </div>
-        <button class="pkg-btn" id="btnMega">Buy Now →</button>
-      </div>
-      <div class="breet-cashback-tag">✦ 10% Cashback</div>
-    </div>
-
-  </div>
-
-  <!-- BREET REWARDS SECTION -->
-  <div class="breet-rewards-section">
-    <div class="breet-section-header">
-      <div class="breet-badge">POWERED BY BREET</div>
-    </div>
-    <div class="breet-section-title">BREET <span>REWARDS</span><br>PROGRAMME</div>
-    <div class="breet-section-sub">Every time you pay with Breet, you earn. No sign-up needed — rewards are automatically credited to your Pose wallet the moment your payment is confirmed.</div>
-
-    <div class="breet-rewards-grid">
-      <div class="breet-reward-card">
-        <div class="brc-icon">💸</div>
-        <div class="brc-title">10% Cashback — Every Purchase</div>
-        <div class="brc-desc">Any purchase completed through Breet earns you 10% cashback, automatically credited as Pose Coins. No code needed. No minimum spend. Runs for the first 6 months of the programme.</div>
-        <div class="brc-highlight">
-          Purchase ₦10,000 → earn 400 bonus Pose Coins
-          <span class="bh-ex">Credited instantly after payment confirms</span>
-        </div>
-      </div>
-
-      <div class="breet-reward-card">
-        <div class="brc-icon">🎁</div>
-        <div class="brc-title">First Deposit Bonus</div>
-        <div class="brc-desc">Fund your Pose wallet through Breet for the very first time and receive a one-time welcome bonus in Pose Coins. This is Pose's way of saying welcome to the future of payments.</div>
-        <div class="brc-highlight">
-          First deposit of ₦5,000 → receive ₦500 worth of bonus Pose Coins
-          <span class="bh-ex">One-time reward · applied automatically</span>
-        </div>
-      </div>
-
-      <div class="breet-reward-card">
-        <div class="brc-icon">⚡</div>
-        <div class="brc-title">Creator Withdrawal Bonus</div>
-        <div class="brc-desc">Creators who withdraw their earnings through Breet receive reduced fees or bonus Pose Coins on their first few withdrawals. Encouraging creators to embrace faster, global payouts.</div>
-        <div class="brc-highlight">
-          First 3 withdrawals via Breet = reduced fees
-          <span class="bh-ex">Automatically applied for eligible creators</span>
-        </div>
-      </div>
-
-      <div class="breet-reward-card">
-        <div class="brc-icon">🌍</div>
-        <div class="brc-title">Global Payments — Any Currency</div>
-        <div class="brc-desc">Breet supports crypto and stablecoin payments, meaning anyone anywhere in the world can buy Pose Coins without needing a Nigerian bank account. Pay from your crypto wallet in seconds.</div>
-        <div class="brc-highlight">
-          USDT · USDC · BTC · ETH · and more supported
-          <span class="bh-ex">Instant settlement · no conversion delays</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="breet-cta-row">
-      <button class="breet-switch-btn" onclick="selectPayMethod('breet');document.querySelector('.pay-method-wrap').scrollIntoView({behavior:'smooth'});">
-        Switch to Breet & Start Earning →
-      </button>
-      <button class="breet-learn-btn" onclick="openModal('breet')">
-        Learn More About Breet
-      </button>
-    </div>
-  </div>
+  <div class="pkgs" id="pkgContainer"></div>
 
   <!-- TRUST -->
   <div class="trust">
-    <div class="titem"><div class="tdot g"></div>Instant delivery (card)</div>
-    <div class="titem"><div class="tdot b"></div>Breet crypto payments</div>
-    <div class="titem"><div class="tdot g"></div>Coins never expire</div>
-    <div class="titem"><div class="tdot b"></div>10% Breet cashback</div>
-    <div class="titem"><div class="tdot p"></div>Supports real creators</div>
-    <div class="titem"><div class="tdot g"></div>₦25 = 1 Pose Coin</div>
+    <div class="titem"><div class="tdot g"></div>Priced for your country</div>
+    <div class="titem"><div class="tdot c"></div>Crypto & stablecoin supported</div>
+    <div class="titem"><div class="tdot p"></div>Coins never expire</div>
+    <div class="titem"><div class="tdot g"></div>Supports real creators</div>
   </div>
 
   <!-- WHY -->
   <div class="why-section">
     <div class="slabel">Why Pose Coins?</div>
-    <div class="stitle" style="font-size:clamp(24px,5vw,40px);">WATCH WHAT YOU LOVE.<br><span style="color:var(--gold)">SUPPORT WHO YOU LOVE.</span></div>
+    <div class="stitle" style="font-size:clamp(22px,5vw,36px);">WATCH WHAT YOU LOVE.<br><span style="color:var(--gold)">SUPPORT WHO YOU LOVE.</span></div>
     <div class="why-grid">
       <div class="wcard">
-        <div class="wicon p"><svg viewBox="0 0 24 24" fill="none"><path d="M5 3L19 12L5 21V3Z" fill="#9B6FEC"/></svg></div>
+        <div class="wicon p"><svg viewBox="0 0 24 24" fill="none"><path d="M5 3L19 12L5 21V3Z" fill="#B79CFF"/></svg></div>
         <h3>Unlock Premium Content</h3>
-        <p>Access thousands of exclusive videos and content you won't find anywhere else. Your coins give you VIP access whenever you want it.</p>
+        <p>Exclusive videos from your favourite creators, whenever you want them.</p>
       </div>
       <div class="wcard">
-        <div class="wicon g"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#D4A843" stroke-width="1.8"/><path d="M12 7V12L15 14" stroke="#D4A843" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-        <h3>Coins That Last Forever</h3>
-        <p>No expiry dates. No rush. Buy coins today and use them months later. Your balance stays until you're ready to spend it.</p>
+        <div class="wicon g"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#E3B34D" stroke-width="1.8"/><path d="M12 7V12L15 14" stroke="#E3B34D" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <h3>Coins Never Expire</h3>
+        <p>Buy today, spend whenever. Your balance just waits for you.</p>
       </div>
       <div class="wcard">
-        <div class="wicon w"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 4 14 4 9a8 8 0 0116 0c0 5-8 12-8 12z" fill="#7B3FE4" opacity="0.7"/><circle cx="12" cy="9" r="2.5" fill="#9B6FEC"/></svg></div>
-        <h3>Directly Support Creators</h3>
-        <p>Every coin you spend goes straight to the creator. When you watch and pay, you're funding someone's dream and livelihood.</p>
+        <div class="wicon p"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 4 14 4 9a8 8 0 0116 0c0 5-8 12-8 12z" fill="#8355FF" opacity="0.7"/><circle cx="12" cy="9" r="2.5" fill="#B79CFF"/></svg></div>
+        <h3>Support Creators Directly</h3>
+        <p>Every coin funds someone's dream and livelihood, instantly.</p>
       </div>
       <div class="wcard">
-        <div class="wicon br"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#00C896" stroke-width="1.8"/><path d="M8 12h8M12 8v8" stroke="#00C896" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-        <h3>Breet Cashback Rewards</h3>
-        <p>Pay with Breet and earn 10% of your purchase back as bonus Pose Coins — automatically, on every single transaction, for 6 months.</p>
-      </div>
-      <div class="wcard">
-        <div class="wicon br"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 9.6H22L15.8 14.4L18.2 22L12 17.2L5.8 22L8.2 14.4L2 9.6H9.6L12 2Z" fill="#00C896" opacity="0.8"/></svg></div>
-        <h3>Pay Globally with Crypto</h3>
-        <p>Use Breet to pay with USDT, USDC, Bitcoin, Ethereum and more. No Nigerian bank account needed — accessible to creators and fans worldwide.</p>
-      </div>
-      <div class="wcard">
-        <div class="wicon p"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2" stroke="#9B6FEC" stroke-width="1.8"/><path d="M3 10h18" stroke="#9B6FEC" stroke-width="1.8"/><circle cx="7" cy="15" r="1" fill="#9B6FEC"/></svg></div>
-        <h3>Multiple Payment Options</h3>
-        <p>Card, bank transfer, USSD, mobile money via Flutterwave — or crypto and stablecoin via Breet. You choose what works best for you.</p>
+        <div class="wicon c"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 9.6H22L15.8 14.4L18.2 22L12 17.2L5.8 22L8.2 14.4L2 9.6H9.6L12 2Z" fill="#4FD1E8" opacity="0.85"/></svg></div>
+        <h3>Priced For You</h3>
+        <p>Nigeria, Africa, or anywhere else — the price you see is the price built for your region.</p>
       </div>
     </div>
   </div>
 
   <!-- HOW IT WORKS -->
   <div class="slabel" style="margin-bottom:8px">Simple Process</div>
-  <div class="stitle" style="font-size:clamp(24px,5vw,42px);margin-bottom:28px">HOW IT <span style="color:var(--gold)">WORKS</span></div>
+  <div class="stitle" style="font-size:clamp(22px,5vw,38px);margin-bottom:24px">HOW IT <span style="color:var(--gold)">WORKS</span></div>
   <div class="how-strip">
-    <div class="hstep">
-      <div class="hline"></div>
-      <div class="hnum">01</div>
-      <div class="htitle">Pick a Pack</div>
-      <div class="hdesc">Choose a package or enter your own amount from ₦100. See your coins before you pay — no surprises.</div>
-    </div>
-    <div class="hstep">
-      <div class="hnum">02</div>
-      <div class="htitle">Choose Payment</div>
-      <div class="hdesc">Pay with card, bank transfer, or USSD via Flutterwave — or use Breet for crypto payments and earn 10% cashback.</div>
-    </div>
-    <div class="hstep">
-      <div class="hnum">03</div>
-      <div class="htitle">Enjoy Everything</div>
-      <div class="hdesc">Open the Pose app — your coins are there. Watch, support every creator you love, and keep your Breet rewards building.</div>
-    </div>
+    <div class="hstep"><div class="hline"></div><div class="hnum">01</div><div class="htitle">Pick Your Country</div><div class="hdesc">Every price on the page updates instantly to your region and currency.</div></div>
+    <div class="hstep"><div class="hnum">02</div><div class="htitle">Choose a Pack</div><div class="hdesc">5 sizes, from a tiny top-up to a big bonus-loaded pack. See the total before you pay.</div></div>
+    <div class="hstep"><div class="hnum">03</div><div class="htitle">Pay & Enjoy</div><div class="hdesc">Card, bank, or crypto. Coins land in your Pose app the moment payment confirms.</div></div>
   </div>
 
 </div>
@@ -698,17 +413,13 @@ footer p{font-size:11px;color:var(--muted);line-height:1.9;margin-bottom:16px;}
 <!-- FOOTER -->
 <footer>
   <div class="footer-inner">
-    <p>© 2025 Pose. All rights reserved.<br>Pose Coins are virtual currency for use within the Pose app only. Rate: ₦25 per coin. All purchases are final.<br>Breet cashback programme active for first 6 months. Rewards credited as Pose Coins.</p>
+    <p>© 2025 Pose. All rights reserved. Pose Coins are virtual currency for use within the Pose app only. All purchases are final.</p>
     <div class="flinks">
       <a onclick="openModal('privacy')">Privacy Policy</a>
       <a onclick="openModal('terms')">Terms of Use</a>
       <a onclick="openModal('help')">Help Centre</a>
-      <a onclick="openModal('breet')">Breet Rewards</a>
+      <a onclick="openModal('coverage')">Pricing & Coverage</a>
       <a href="#" target="_blank" rel="noopener">Download App</a>
-    </div>
-    <div class="footer-breet">
-      <span>Crypto payments powered by</span>
-      <div class="breet-badge">BREET</div>
     </div>
   </div>
 </footer>
@@ -718,18 +429,16 @@ footer p{font-size:11px;color:var(--muted);line-height:1.9;margin-bottom:16px;}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title">PRIVACY POLICY</div>
-    <div class="modal-sub">Last updated: January 2025</div>
+    <div class="modal-sub">Last updated: July 2026</div>
     <div class="modal-body">
       <h4>1. Information We Collect</h4>
-      When you use Pose Shop, we collect your email address and user ID from your Pose account in order to process your purchase and credit coins to your wallet. We also collect transaction details such as amount paid, coins purchased, and payment reference for record-keeping purposes.
+      When you use Pose Shop, we collect your email address and user ID from your Pose account to process your purchase and credit coins to your wallet, plus transaction details for record-keeping.
       <h4>2. How We Use Your Information</h4>
-      Your information is used solely to process payments, credit Pose Coins to your account, and provide customer support. We do not sell, rent, or share your personal information with third parties for marketing purposes.
+      Used solely to process payments, credit coins, and provide support. We never sell or share your data for marketing.
       <h4>3. Payment Processing</h4>
-      Payments are processed securely by Flutterwave (card/bank) and Breet (crypto/stablecoin). Pose does not store your card or wallet details. All payment data is handled by our payment partners in accordance with their respective security standards.
-      <h4>4. Breet Integration</h4>
-      When you choose to pay with Breet, your transaction data is processed by Breet in accordance with Breet's Privacy Policy. Pose receives only transaction confirmation and amount to credit your coins. No crypto wallet details are stored by Pose.
-      <h4>5. Your Rights</h4>
-      You may request access to, correction of, or deletion of your personal data at any time by contacting us at <a href="mailto:poseinfos@gmail.com">poseinfos@gmail.com</a>.
+      Payments are processed by Flutterwave (card/bank) and Breet (crypto/stablecoin). Pose does not store your card or wallet details.
+      <h4>4. Your Rights</h4>
+      Request access, correction, or deletion of your data anytime at <a href="mailto:poseinfos@gmail.com">poseinfos@gmail.com</a>.
     </div>
     <button class="modal-close" onclick="closeModal('privacy')">Close</button>
   </div>
@@ -740,20 +449,20 @@ footer p{font-size:11px;color:var(--muted);line-height:1.9;margin-bottom:16px;}
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title">TERMS OF USE</div>
-    <div class="modal-sub">Last updated: January 2025</div>
+    <div class="modal-sub">Last updated: July 2026</div>
     <div class="modal-body">
       <h4>1. Pose Coins</h4>
-      Pose Coins are a virtual in-app currency used exclusively within the Pose application. They have no monetary value outside the app and cannot be transferred, withdrawn, or exchanged for cash.
+      Pose Coins are a virtual in-app currency for use exclusively within the Pose app. They cannot be transferred, resold, withdrawn, or exchanged for cash.
       <h4>2. Purchases Are Final</h4>
-      All Pose Coin purchases are non-refundable. Once coins are credited to your account, they cannot be reversed.
-      <h4>3. Breet Cashback Programme</h4>
-      The 10% cashback reward applies to purchases made through Breet during the programme period (first 6 months from launch). Cashback is credited as Pose Coins and is subject to change. Pose reserves the right to modify or end the programme at any time with reasonable notice.
-      <h4>4. First Deposit Bonus</h4>
-      The Breet first deposit bonus is a one-time reward per user account and applies only to the first qualifying deposit made through Breet. Abuse of this offer will result in forfeiture of rewards.
-      <h4>5. Coin Delivery</h4>
-      Coins purchased via card payment are delivered instantly. Breet crypto payments are credited upon blockchain confirmation. If your coins do not arrive within 30 minutes, contact support.
+      All purchases are non-refundable once coins are credited.
+      <h4>3. Regional Pricing</h4>
+      Coin prices vary by country to reflect local purchasing power and payment processing costs. All prices are set in Naira and converted to your local currency at a fixed rate that Pose updates periodically — not a live market rate — to keep prices stable.
+      <h4>4. Service Fee</h4>
+      A service fee is added to every purchase to cover payment processing (4% Nigeria, 6% other African countries, 10% elsewhere), calculated on the coin price before any bonus.
+      <h4>5. Bonus Coins</h4>
+      Select packages include bonus coins at no extra cost, shown before you pay.
       <h4>6. Contact</h4>
-      Questions? Email us at <a href="mailto:poseinfos@gmail.com">poseinfos@gmail.com</a>.
+      Questions? Email <a href="mailto:poseinfos@gmail.com">poseinfos@gmail.com</a>.
     </div>
     <button class="modal-close" onclick="closeModal('terms')">Close</button>
   </div>
@@ -766,46 +475,44 @@ footer p{font-size:11px;color:var(--muted);line-height:1.9;margin-bottom:16px;}
     <div class="modal-title">HELP CENTRE</div>
     <div class="modal-sub">We're here to help — reach us anytime</div>
     <div class="modal-body">
-      <h4>📧 Contact Support</h4>
-      For all issues, email us at: <a href="mailto:poseinfos@gmail.com" style="font-size:15px;font-weight:600;">poseinfos@gmail.com</a><br><br>We respond within 24–48 hours on business days.
-      <h4>🪙 My coins didn't arrive</h4>
-      Card payments are instant. Breet crypto payments confirm after blockchain verification — usually within a few minutes. If coins haven't appeared after 30 minutes, email us your transaction reference.
-      <h4>💎 My Breet cashback didn't arrive</h4>
-      Cashback is credited automatically within a few seconds of payment confirmation. If it hasn't appeared after 10 minutes, email us your Breet transaction reference at <a href="mailto:poseinfos@gmail.com">poseinfos@gmail.com</a>.
-      <h4>💳 Payment failed</h4>
-      For card payments, ensure your card is enabled for online transactions. For Breet payments, ensure you have sufficient crypto balance. Contact your wallet provider if the issue persists.
-      <h4>🔑 I can't sign in</h4>
-      Only existing Pose app users can sign in here. Download the Pose app to create an account first.
-      <h4>📱 Where is the Pose app?</h4>
-      Search for <strong>Pose</strong> on the App Store or Google Play Store.
+      <h4>Contact Support</h4>
+      Email <a href="mailto:poseinfos@gmail.com" style="font-size:15px;font-weight:700;">poseinfos@gmail.com</a> — we respond within 24–48 hours.
+      <h4>My coins didn't arrive</h4>
+      Card payments are instant. Crypto confirms after a few blockchain confirmations. Email us your reference if coins are missing after 30 minutes.
+      <h4>Payment failed</h4>
+      For cards, ensure international transactions are enabled. For crypto, check your balance and network.
+      <h4>I can't sign in</h4>
+      Only existing Pose app users can sign in here. Download the app to create an account first.
     </div>
     <button class="modal-close" onclick="closeModal('help')">Close</button>
   </div>
 </div>
 
-<!-- BREET REWARDS MODAL -->
-<div class="modal-overlay" id="modal-breet" onclick="closeModalOutside(event,'modal-breet')">
+<!-- PRICING & COVERAGE MODAL -->
+<div class="modal-overlay" id="modal-coverage" onclick="closeModalOutside(event,'modal-coverage')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <div class="modal-title" style="color:var(--breet)">BREET REWARDS</div>
-    <div class="modal-sub">Everything you need to know about the Pose × Breet partnership</div>
+    <div class="modal-title">PRICING & COVERAGE</div>
+    <div class="modal-sub">How regional pricing works, in full</div>
     <div class="modal-body">
-      <h4>What is Breet?</h4>
-      Breet is a crypto and stablecoin payment platform that allows users to make fast, secure global payments using digital currencies including USDT, USDC, Bitcoin, Ethereum and more.
-      <h4>💸 10% Cashback Programme</h4>
-      Every purchase made through Breet on the Pose Shop earns 10% of the purchase amount back as Pose Coins. This is automatic — no codes, no claims. The cashback is credited to your Pose wallet immediately after your payment confirms. Programme runs for the first 6 months.
-      <h4> First Deposit Bonus</h4>
-      When you fund your wallet or make your first purchase through Breet, you receive a one-time bonus worth 10% of that first transaction in Pose Coins. This is a welcome reward and applies only once per account.
-      <h4>⚡ Creator Withdrawal Bonus</h4>
-      Creators who choose to withdraw their Pose earnings through Breet receive reduced withdrawal fees or bonus Pose Coins on their first three withdrawals. This encourages creators to experience faster, borderless payouts.
-      <h4>🌍 Why Pay with Crypto?</h4>
-      Breet enables Pose users around the world — including those without Nigerian bank accounts — to purchase Pose Coins using their crypto wallets. This makes the Pose economy truly global and accessible to every creator's audience, wherever they are.
-      <h4>How to Activate Breet Rewards</h4>
-      Simply select "Pay with Breet" in the payment method section above before completing your purchase. All rewards are applied automatically. No registration or extra steps needed.
+      <h4>Base Price By Region</h4>
+      <table>
+        <tr><th>Region</th><th>Base rate</th><th>Min coins</th><th>Fee</th></tr>
+        <tr><td>Nigeria</td><td>₦25/coin</td><td>4</td><td>4%</td></tr>
+        <tr><td>Other Africa</td><td>₦100-eq/coin</td><td>6</td><td>6%</td></tr>
+        <tr><td>Rest of world</td><td>₦350-eq/coin</td><td>10</td><td>10%</td></tr>
+      </table>
+      <h4>Fixed Conversion Table</h4>
+      All prices are set in Naira, then converted using fixed rates below — not a live feed — so your price doesn't move day to day.
+      <table id="fxTableBody"><tr><th>Currency</th><th>₦ per unit</th></tr></table>
+      <h4>Bonus Coins</h4>
+      Starter and Basic packs: 2% bonus. Popular, Value and Mega packs: 5% bonus. Custom amounts follow the same rule based on coin count (under 60 coins = 2%, 60+ = 5%).
+      <h4>Payment Methods</h4>
+      Card, bank transfer, USSD and mobile money via Flutterwave, charged in your local currency where supported. Crypto and stablecoin via Breet, from anywhere in the world.
       <h4>Contact</h4>
-      For Breet-specific support, email <a href="mailto:poseinfos@gmail.com">poseinfos@gmail.com</a> with "Breet" in the subject line.
+      Questions about pricing? Email <a href="mailto:poseinfos@gmail.com">poseinfos@gmail.com</a>.
     </div>
-    <button class="modal-close" onclick="closeModal('breet')">Close</button>
+    <button class="modal-close" onclick="closeModal('coverage')">Close</button>
   </div>
 </div>
 
@@ -814,28 +521,210 @@ footer p{font-size:11px;color:var(--muted);line-height:1.9;margin-bottom:16px;}
 const firebaseConfig={apiKey:"AIzaSyDW8V2SjNITrA4LcdmeILh944mTbOKnM0c",authDomain:"rewarderhub.firebaseapp.com",projectId:"rewarderhub",storageBucket:"rewarderhub.appspot.com",messagingSenderId:"85965945106",appId:"1:85965945106:web:fa0a57d8968926e1041bcb",measurementId:"G-F2ERB5NGN0"};
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore(),auth=firebase.auth();
-const COIN_RATE=25;
 const FLW_PUB_KEY="FLWPUBK-2a3845212c24d426fb9b4bcc4155ecd7-X";
+const BREET_PUB_KEY="BREET_PUBLIC_KEY_PLACEHOLDER";
 
-/* ─────────────────────────────────────────────────────
-   BREET CONFIG
-   Replace these placeholders with your real Breet keys
-   when you receive them from Breet's dashboard.
-   BREET_PUB_KEY  = your Breet public / API key
-   BREET_SECRET   = your Breet secret key (server-side only — never expose in frontend)
-   BREET_ENDPOINT = Breet's payment initiation endpoint
-──────────────────────────────────────────────────────── */
-const BREET_PUB_KEY    = "BREET_PUBLIC_KEY_PLACEHOLDER";
-const BREET_ENDPOINT   = "https://api.breet.io/v1/payment/initiate"; // update if different
+const ICON_LOCK='<svg viewBox="0 0 24 24" width="12" height="12" fill="none" style="vertical-align:-1px;margin-right:5px;display:inline-block;"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="1.8"/></svg>';
+const ICON_COIN='<svg viewBox="0 0 24 24" width="13" height="13" fill="none" style="vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M9 12h6M12 9v6" stroke="currentColor" stroke-width="1.6"/></svg>';
+const ICON_STAR='<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" style="vertical-align:-1px;margin-right:4px;"><path d="M12 2l2.9 6.6L22 9.3l-5 4.8L18.2 22 12 18.3 5.8 22 7 14.1l-5-4.8 7.1-0.7L12 2z"/></svg>';
+const ICON_SPARKLE='<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" style="vertical-align:-1px;margin-right:4px;"><path d="M12 2l1.4 5.6L19 9l-5.6 1.4L12 16l-1.4-5.6L5 9l5.6-1.4L12 2z"/></svg>';
+const ICON_CHECK='<svg viewBox="0 0 24 24" width="13" height="13" fill="none" style="vertical-align:-2px;margin-right:4px;"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-/* ── CASHBACK RATES ── */
-const BREET_CASHBACK_RATE   = 0.10; // 10%
-const BREET_FIRST_DEPOSIT   = 0.10; // 10% bonus on first deposit
-const BREET_CASHBACK_MONTHS = 6;    // programme duration
+/* ── PRICING ENGINE ──────────────────────────────────────────────────────
+   All prices are computed in Naira first, then converted to the buyer's
+   currency using the FIXED (not live) table below. Rates were set with a
+   deliberate buffer under the live market rate so a sudden Naira move
+   never crashes the foreign-currency price. Update this table manually,
+   on your own schedule — it is intentionally not fetched from an API.
+──────────────────────────────────────────────────────────────────────── */
+const TIERS = {
+  NG:     { rate:25,  minCoins:4,  fee:0.04 },
+  AFRICA: { rate:75,  minCoins:6,  fee:0.06 },
+  INTL:   { rate:150, minCoins:8,  fee:0.10 }
+};
 
+// NGN owed per 1 unit of the foreign currency (fixed, buffered ~27% under live rate)
+const FX = {
+  NGN:1,  USD:1000, GBP:1335, CAD:700, INR:10.5, JPY:6.2,
+  GHS:88, KES:7.75, ZAR:61.60, UGX:0.275, TZS:0.38
+};
+const ZERO_DECIMAL = new Set(['NGN','JPY','UGX','TZS']);
+const SYMBOLS = { NGN:'₦', USD:'$', GBP:'£', CAD:'C$', INR:'₹', JPY:'¥', GHS:'GH₵', KES:'KSh', ZAR:'R', UGX:'USh', TZS:'TSh' };
+
+const COUNTRIES = [
+  { code:'NG', name:'Nigeria',       tier:'NG',     currency:'NGN' },
+  { code:'GH', name:'Ghana',         tier:'AFRICA', currency:'GHS' },
+  { code:'KE', name:'Kenya',         tier:'AFRICA', currency:'KES' },
+  { code:'ZA', name:'South Africa',  tier:'AFRICA', currency:'ZAR' },
+  { code:'UG', name:'Uganda',        tier:'AFRICA', currency:'UGX' },
+  { code:'TZ', name:'Tanzania',      tier:'AFRICA', currency:'TZS' },
+  { code:'XA', name:'Other Africa',  tier:'AFRICA', currency:'NGN' },
+  { code:'US', name:'United States', tier:'INTL',   currency:'USD' },
+  { code:'GB', name:'United Kingdom',tier:'INTL',   currency:'GBP' },
+  { code:'CA', name:'Canada',        tier:'INTL',   currency:'CAD' },
+  { code:'IN', name:'India',         tier:'INTL',   currency:'INR' },
+  { code:'JP', name:'Japan',         tier:'INTL',   currency:'JPY' },
+  { code:'XX', name:'Other',         tier:'INTL',   currency:'USD' }
+];
+
+const PACKAGES = [
+  { key:'starter', name:'Starter', coinsByTier:{NG:4, AFRICA:6, INTL:8} },
+  { key:'basic',   name:'Basic',   coins:20 },
+  { key:'popular', name:'Popular', coins:60, popular:true },
+  { key:'value',   name:'Value',   coins:120 },
+  { key:'mega',    name:'Mega',    coins:480 }
+];
+
+let selectedCountry = COUNTRIES[0];
 let currentUser = null;
-let payMethod = "flw"; // "flw" or "breet"
-let breetFirstDeposit = false; // tracks if user has ever used Breet
+let payMethod = "flw";
+
+function getCountry(code){ return COUNTRIES.find(c=>c.code===code) || COUNTRIES[0]; }
+
+function bonusPercent(baseCoins){ return baseCoins < 60 ? 0.02 : 0.05; }
+
+// Core calc: everything is computed in NGN, converted to display currency last.
+function priceCoins(baseCoins, tierKey){
+  const tier = TIERS[tierKey];
+  const bonusPct = bonusPercent(baseCoins);
+  const bonusCoins = Math.floor(baseCoins * bonusPct);
+  const totalCoins = baseCoins + bonusCoins;
+  const subtotalNGN = baseCoins * tier.rate;
+  const feeNGN = subtotalNGN * tier.fee;
+  const totalNGN = subtotalNGN + feeNGN;
+  return { baseCoins, bonusCoins, totalCoins, subtotalNGN, feeNGN, totalNGN, bonusPct };
+}
+
+function ngnToCurrency(ngnAmount, currency){
+  return ngnAmount / (FX[currency] || 1);
+}
+
+function formatMoney(amount, currency){
+  const sym = SYMBOLS[currency] || currency+' ';
+  const decimals = ZERO_DECIMAL.has(currency) ? 0 : 2;
+  const num = amount.toLocaleString(undefined, {minimumFractionDigits:decimals, maximumFractionDigits:decimals});
+  return sym + num;
+}
+
+function minCoinsForTier(tierKey){ return TIERS[tierKey].minCoins; }
+
+/* ── RENDER ── */
+function buildRegionChips(){
+  const wrap = document.getElementById('regionChips');
+  wrap.innerHTML = COUNTRIES.map(c => `
+    <div class="rchip ${c.code===selectedCountry.code?'active':''} tier-${c.tier.toLowerCase()}" data-code="${c.code}" onclick="setCountry('${c.code}')">
+      <span class="cc-badge">${c.code.length>2?c.code.slice(0,2):c.code}</span>${c.name}
+    </div>`).join('');
+}
+
+function setCountry(code){
+  selectedCountry = getCountry(code);
+  renderAll();
+}
+
+function tierBadgeLabel(tier){
+  if(tier==='NG') return 'Nigeria';
+  if(tier==='AFRICA') return 'Africa';
+  return 'International';
+}
+function tierBadgeClass(tier){
+  if(tier==='NG') return 'ng';
+  if(tier==='AFRICA') return 'africa';
+  return 'intl';
+}
+
+function renderLiveReadout(){
+  const popular = PACKAGES.find(p=>p.key==='popular');
+  const calc = priceCoins(popular.coins, selectedCountry.tier);
+  const amt = ngnToCurrency(calc.totalNGN, selectedCountry.currency);
+  document.getElementById('lrPrice').textContent = formatMoney(amt, selectedCountry.currency);
+  document.getElementById('lrCoins').innerHTML = `${calc.totalCoins} coins total <strong>(${calc.baseCoins} + ${calc.bonusCoins} bonus)</strong>`;
+  const badge = document.getElementById('lrTierBadge');
+  badge.textContent = tierBadgeLabel(selectedCountry.tier);
+  badge.className = 'lr-tier-badge ' + tierBadgeClass(selectedCountry.tier);
+}
+
+function renderRateSummary(){
+  const tier = TIERS[selectedCountry.tier];
+  const minAmt = ngnToCurrency(tier.rate * tier.minCoins, selectedCountry.currency);
+  document.getElementById('rateSummary').textContent =
+    `Prices shown for ${selectedCountry.name}. Minimum purchase: ${tier.minCoins} coins (${formatMoney(minAmt, selectedCountry.currency)}). Service fee: ${Math.round(tier.fee*100)}%.`;
+}
+
+function renderNav(){
+  document.getElementById('navFlag').textContent = selectedCountry.code.slice(0,2);
+  document.getElementById('navCurrency').textContent = selectedCountry.currency;
+}
+
+function renderPackages(){
+  const wrap = document.getElementById('pkgContainer');
+  wrap.innerHTML = PACKAGES.map(pkg => {
+    const baseCoins = pkg.coinsByTier ? pkg.coinsByTier[selectedCountry.tier] : pkg.coins;
+    const calc = priceCoins(baseCoins, selectedCountry.tier);
+    const amt = ngnToCurrency(calc.totalNGN, selectedCountry.currency);
+    const feeAmt = ngnToCurrency(calc.feeNGN, selectedCountry.currency);
+    return `
+    <div class="pkg ${pkg.popular?'popular':''}" onclick="buyPkg('${pkg.key}')">
+      ${pkg.popular?`<div class="pkg-pop-tag">${ICON_STAR}Most Popular</div>`:''}
+      <div class="pkg-head">
+        <span class="pkg-name">${pkg.name}</span>
+        <div class="pkg-coins-row"><div class="pkg-coins">${calc.totalCoins}</div><div class="pkg-coins-lbl">coins</div></div>
+        <div class="pkg-bonus">${calc.bonusCoins>0? ICON_SPARKLE+'+'+calc.bonusCoins+' bonus coins' : ''}</div>
+      </div>
+      <div class="pkg-div"></div>
+      <div class="pkg-body">
+        <div class="pkg-price mono">${formatMoney(amt, selectedCountry.currency)}</div>
+        <div class="pkg-fee-note">incl. ${formatMoney(feeAmt, selectedCountry.currency)} service fee</div>
+        <button class="pkg-btn">Buy Now →</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCustomBox(){
+  document.getElementById('amtPfx').textContent = SYMBOLS[selectedCountry.currency] || selectedCountry.currency;
+  const tier = TIERS[selectedCountry.tier];
+  const minAmt = ngnToCurrency(tier.rate * tier.minCoins, selectedCountry.currency);
+  document.getElementById('customBoxHint').textContent =
+    `Minimum ${tier.minCoins} coins (${formatMoney(minAmt, selectedCountry.currency)}). Type any amount above that to see your total.`;
+  previewCustom(document.getElementById('customAmt').value);
+}
+
+function renderFxTable(){
+  const rows = Object.keys(FX).filter(c=>c!=='NGN').map(c =>
+    `<tr><td>${c}</td><td>₦${FX[c].toLocaleString()}</td></tr>`).join('');
+  document.getElementById('fxTableBody').innerHTML =
+    '<tr><th>Currency</th><th>₦ per unit</th></tr>' + rows;
+}
+
+function renderAll(){
+  buildRegionChips();
+  renderLiveReadout();
+  renderRateSummary();
+  renderNav();
+  renderPackages();
+  renderCustomBox();
+}
+
+/* ── CUSTOM AMOUNT LOGIC ── */
+function previewCustom(val){
+  const entered = parseFloat(val);
+  const el = document.getElementById('cprev');
+  const tier = TIERS[selectedCountry.tier];
+  if(!entered || entered <= 0){ el.innerHTML = ''; return; }
+  const enteredNGN = entered * (FX[selectedCountry.currency] || 1);
+  // work backwards: entered amount already includes fee, so base+fee = enteredNGN -> subtotal = enteredNGN/(1+fee)
+  const subtotalNGN = enteredNGN / (1 + tier.fee);
+  const baseCoins = Math.floor(subtotalNGN / tier.rate);
+  if(baseCoins < tier.minCoins){
+    const minAmt = ngnToCurrency(tier.rate * tier.minCoins, selectedCountry.currency);
+    el.innerHTML = `<span style="color:var(--red)">Minimum is ${formatMoney(minAmt, selectedCountry.currency)}</span>`;
+    return;
+  }
+  const calc = priceCoins(baseCoins, selectedCountry.tier);
+  const bonusLabel = calc.bonusPct === 0.05 ? '5% bonus tier' : '2% bonus tier';
+  el.innerHTML = `You'll receive <strong>${ICON_COIN}${calc.totalCoins} coins</strong> (${calc.baseCoins} + ${calc.bonusCoins} bonus)<span class="bonus-tag">${bonusLabel}</span>`;
+}
 
 /* ── AUTH ── */
 auth.onAuthStateChanged(user => {
@@ -852,19 +741,54 @@ function doLogin(){
   btn.disabled = true; btn.textContent = 'Signing in…';
   auth.signInWithEmailAndPassword(email, password).catch(err => {
     btn.disabled = false; btn.textContent = 'Sign In to Pose Shop';
+    console.error('Email login error:', err.code, err.message);
     const msgs = {
       'auth/user-not-found':'No Pose account found with this email.',
       'auth/wrong-password':'Incorrect password. Please try again.',
       'auth/invalid-email':'Please enter a valid email address.',
       'auth/too-many-requests':'Too many attempts. Please wait and try again.',
-      'auth/invalid-credential':'Incorrect email or password. Please try again.'
+      'auth/invalid-credential':'Incorrect email or password. Please try again.',
+      'auth/operation-not-allowed':'Email/password sign-in is not enabled for this app yet. Contact support.',
+      'auth/network-request-failed':'Network error. Please check your connection and try again.'
     };
-    showErr(msgs[err.code] || 'Login failed. Please check your details.');
+    showErr(msgs[err.code] || `Login failed (${err.code || 'unknown error'}). Please try again or contact support.`);
   });
 }
 function showErr(msg){ const e = document.getElementById('loginError'); e.textContent = msg; e.style.display = 'block'; }
 document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 document.getElementById('loginEmail').addEventListener('keydown',    e => { if(e.key==='Enter') doLogin(); });
+
+function doGoogleLogin(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  const btn = document.getElementById('googleBtn');
+  document.getElementById('loginError').style.display = 'none';
+  btn.disabled = true;
+  auth.signInWithPopup(provider).then(async (result) => {
+    const uid = result.user.uid;
+    try {
+      const docSnap = await db.collection('users').doc(uid).get();
+      if(!docSnap.exists){
+        await auth.signOut();
+        btn.disabled = false;
+        showErr('No Pose account is linked to this Google account yet. Please sign in with your Pose app email and password, or connect Google inside the Pose app first.');
+      }
+    } catch(checkErr){
+      console.error('Error checking Pose account for Google sign-in:', checkErr);
+      btn.disabled = false;
+    }
+  }).catch(err => {
+    btn.disabled = false;
+    if(err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
+    console.error('Google sign-in error:', err.code, err.message);
+    const msgs = {
+      'auth/account-exists-with-different-credential':'This email is already registered with a different sign-in method. Please sign in with your Pose app email and password instead.',
+      'auth/popup-blocked':'Your browser blocked the sign-in popup. Please allow popups for this site and try again.',
+      'auth/unauthorized-domain':'This site is not yet authorized for Google sign-in. Contact support.',
+      'auth/network-request-failed':'Network error. Please check your connection and try again.'
+    };
+    showErr(msgs[err.code] || `Google sign-in failed (${err.code || 'unknown error'}). Please try again or contact support.`);
+  });
+}
 
 function showShop(user){
   document.getElementById('loginGate').classList.add('hidden');
@@ -872,7 +796,6 @@ function showShop(user){
   document.getElementById('navAvatar').textContent = initial;
   document.getElementById('navEmail').textContent = user.email;
   loadWalletData();
-  checkBreetFirstDeposit();
 }
 
 function loadWalletData(){
@@ -883,19 +806,12 @@ function loadWalletData(){
   }).catch(() => { document.getElementById('navCoins').textContent = '—'; });
 }
 
-function checkBreetFirstDeposit(){
-  if(!currentUser) return;
-  db.collection('users').doc(currentUser.uid).collection('walletTransactions')
-    .where('paymentMethod','==','breet').limit(1).get()
-    .then(snap => { breetFirstDeposit = snap.empty; }) // true = no prior Breet tx = eligible for bonus
-    .catch(() => { breetFirstDeposit = false; });
-}
-
 function doLogout(){
   auth.signOut();
   document.getElementById('loginGate').classList.remove('hidden');
   document.getElementById('loginBtn').disabled = false;
   document.getElementById('loginBtn').textContent = 'Sign In to Pose Shop';
+  document.getElementById('googleBtn').disabled = false;
   document.getElementById('loginError').style.display = 'none';
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
@@ -910,78 +826,66 @@ function selectPayMethod(method){
   payMethod = method;
   document.getElementById('tabFlw').classList.toggle('active', method === 'flw');
   document.getElementById('tabBreet').classList.toggle('active', method === 'breet');
-  document.body.classList.toggle('breet-mode', method === 'breet');
-
-  const note = document.getElementById('breetCashbackNote');
-  note.style.display = method === 'breet' ? 'block' : 'none';
-
   const buyBtn = document.getElementById('customBuyBtn');
   if(method === 'breet'){
     buyBtn.className = 'cbuy-btn breet-btn';
-    buyBtn.textContent = 'Pay with Breet & Earn Cashback →';
+    buyBtn.textContent = 'Pay with Breet →';
   } else {
     buyBtn.className = 'cbuy-btn flw-btn';
     buyBtn.textContent = 'Pay & Get Coins →';
   }
-  previewCustom(document.getElementById('customAmt').value);
 }
 
-/* ── CUSTOM AMOUNT ── */
-function previewCustom(val){
-  const n = parseFloat(val), el = document.getElementById('cprev'), bp = document.getElementById('breetPreview');
-  if(n >= 100){
-    const c = Math.floor(n / COIN_RATE);
-    el.innerHTML = `You will receive <strong>${c.toLocaleString()} 🪙 Pose Coins</strong>`;
-    if(payMethod === 'breet'){
-      const cashback = Math.floor(c * BREET_CASHBACK_RATE);
-      const total = c + cashback;
-      let bonusText = `✦ +${cashback} Breet cashback coins = ${total} coins total`;
-      if(breetFirstDeposit) bonusText += ` <span style="color:var(--gold-light)">+ First Deposit Bonus!</span>`;
-      bp.innerHTML = bonusText;
-      bp.classList.add('show');
-    } else {
-      bp.classList.remove('show');
-    }
-  } else if(n > 0){
-    el.innerHTML = `<span style="color:var(--red)">Minimum is ₦100</span>`;
-    bp.classList.remove('show');
-  } else {
-    el.innerHTML = ''; bp.classList.remove('show');
-  }
+/* ── PURCHASE FLOWS ── */
+function buyPkg(pkgKey){
+  if(!currentUser){ alert('Please sign in first.'); return; }
+  const pkg = PACKAGES.find(p=>p.key===pkgKey);
+  const baseCoins = pkg.coinsByTier ? pkg.coinsByTier[selectedCountry.tier] : pkg.coins;
+  const calc = priceCoins(baseCoins, selectedCountry.tier);
+  const amt = ngnToCurrency(calc.totalNGN, selectedCountry.currency);
+  const description = `${pkg.name} Pack — ${calc.totalCoins} Pose Coins`;
+  dispatchPurchase(calc, amt, description);
 }
 
 function buyCustom(){
   if(!currentUser){ alert('Please sign in first.'); return; }
-  const val = parseFloat(document.getElementById('customAmt').value);
-  if(!val || val < 100){ alert('Minimum purchase is ₦100.'); return; }
-  const coins = Math.floor(val / COIN_RATE);
-  if(payMethod === 'breet'){
-    launchBreet(val, coins, `Custom — ${coins} Pose Coins`);
-  } else {
-    launchFlutterwave(val, coins, `Custom — ${coins} Pose Coins`);
+  const entered = parseFloat(document.getElementById('customAmt').value);
+  const tier = TIERS[selectedCountry.tier];
+  if(!entered || entered <= 0){ alert('Please enter an amount.'); return; }
+  const enteredNGN = entered * (FX[selectedCountry.currency] || 1);
+  const subtotalNGN = enteredNGN / (1 + tier.fee);
+  const baseCoins = Math.floor(subtotalNGN / tier.rate);
+  if(baseCoins < tier.minCoins){
+    const minAmt = ngnToCurrency(tier.rate * tier.minCoins, selectedCountry.currency);
+    alert(`Minimum purchase is ${formatMoney(minAmt, selectedCountry.currency)}.`);
+    return;
   }
+  const calc = priceCoins(baseCoins, selectedCountry.tier);
+  const amt = ngnToCurrency(calc.totalNGN, selectedCountry.currency);
+  dispatchPurchase(calc, amt, `Custom — ${calc.totalCoins} Pose Coins`);
 }
 
-function buyPkg(coins, amount, description){
-  if(!currentUser){ alert('Please sign in first.'); return; }
+function dispatchPurchase(calc, amountInLocalCurrency, description){
   if(payMethod === 'breet'){
-    launchBreet(amount, coins, description);
+    // Breet is always handed the NGN-equivalent amount; Breet computes the
+    // actual crypto amount itself using its own live crypto rates.
+    launchBreet(calc.totalNGN, calc, description);
   } else {
-    launchFlutterwave(amount, coins, description);
+    launchFlutterwave(amountInLocalCurrency, calc, description);
   }
 }
 
 /* ── FLUTTERWAVE ── */
-function launchFlutterwave(amount, coins, description){
+function launchFlutterwave(amount, calc, description){
   const txRef = `poseshop_${currentUser.uid}_${Date.now()}`;
   FlutterwaveCheckout({
-    public_key: FLW_PUB_KEY, tx_ref: txRef, amount, currency: "NGN", country: "NG",
+    public_key: FLW_PUB_KEY, tx_ref: txRef, amount, currency: selectedCountry.currency, country: selectedCountry.code === 'XA' || selectedCountry.code === 'XX' ? 'NG' : selectedCountry.code,
     payment_options: "card,ussd,banktransfer,mobilemoney",
     customer: { email: currentUser.email, phone_number: "", name: currentUser.displayName || currentUser.email },
     customizations: { title: "Pose Shop", description, logo: "https://i.ibb.co/Y7RxjFzF/poselogobg.jpg" },
     callback: (response) => {
       if(response.status === "successful" || response.status === "completed" || response.tx_ref){
-        creditCoins(coins, amount, response.transaction_id || response.flw_ref, description, 'flutterwave', 0);
+        creditCoins(calc, response.transaction_id || response.flw_ref, description, 'flutterwave');
       } else if(response.status !== 'cancelled'){
         alert('Payment was not completed. Please try again.');
       }
@@ -990,77 +894,38 @@ function launchFlutterwave(amount, coins, description){
   });
 }
 
-/* ── BREET PAYMENT ──────────────────────────────────────────────────────────
-   Integration note:
-   When your Breet API key and secret arrive, replace BREET_PUB_KEY above
-   and implement the Breet checkout popup using Breet's SDK or redirect flow.
-   The function below is scaffolded and ready — just plug in the real SDK call
-   where indicated with the TODO comment.
-
-   Breet will return a callback/webhook with:
-     - transaction_id or reference
-     - status: "successful" / "completed"
-     - amount
-
-   Pass those into creditCoins() exactly as shown below.
-──────────────────────────────────────────────────────────────────────────── */
-function launchBreet(amount, coins, description){
+/* ── BREET ── */
+function launchBreet(ngnAmount, calc, description){
   const txRef = `poseshop_breet_${currentUser.uid}_${Date.now()}`;
-
-  /* ───────────────────────────────────────────────────
-     TODO: Replace this block with real Breet SDK call
-     Example (replace with actual Breet SDK):
-
-     BreetCheckout({
-       public_key: BREET_PUB_KEY,
-       tx_ref: txRef,
-       amount: amount,
-       currency: "NGN",
-       email: currentUser.email,
-       description: description,
-       callback: (response) => {
-         if(response.status === "successful"){
-           const cashback = Math.floor(coins * BREET_CASHBACK_RATE);
-           creditCoins(coins, amount, response.transaction_id, description, 'breet', cashback);
-         }
-       },
-       onclose: () => {}
-     });
-  ─────────────────────────────────────────────────── */
-
-  // PLACEHOLDER — shows user a coming-soon message until real key is added
+  // TODO: replace with real Breet SDK call once API keys are issued.
+  // Pass ngnAmount as the invoice amount; Breet converts to crypto at its own live rate.
   if(BREET_PUB_KEY === "BREET_PUBLIC_KEY_PLACEHOLDER"){
-    showToastMsg("🔧 Breet integration coming soon — add your Breet API key to activate.", "breet-toast");
+    showToastMsg("Breet integration coming soon — add your Breet API key to activate.", "breet-toast");
     return;
   }
-
-  // If key is present, proceed with Breet (add SDK code above)
-  const cashback = Math.floor(coins * BREET_CASHBACK_RATE);
-  console.log("Breet payment initiated:", { txRef, amount, coins, cashback, description });
+  console.log("Breet payment initiated:", { txRef, ngnAmount, calc, description });
 }
 
 /* ── CREDIT COINS ── */
-async function creditCoins(coins, amountPaid, transactionId, description, paymentMethod, cashbackCoins){
+async function creditCoins(calc, transactionId, description, paymentMethod){
   if(!currentUser) return;
   try {
     const userRef = db.collection('users').doc(currentUser.uid);
-    const totalCoins = coins + cashbackCoins;
-
-    // Credit base coins + cashback in one write
     await userRef.update({
-      pCoinBalance: firebase.firestore.FieldValue.increment(totalCoins),
+      pCoinBalance: firebase.firestore.FieldValue.increment(calc.totalCoins),
       lastCoinPurchase: new Date().toISOString()
     });
-
-    // Log transaction
     await userRef.collection('walletTransactions').add({
       id: 'PCOIN_' + transactionId,
       type: 'Coin Purchase',
-      coins,
-      cashbackCoins,
-      totalCoinsCredit: totalCoins,
-      amountPaid,
-      currency: 'NGN',
+      baseCoins: calc.baseCoins,
+      bonusCoins: calc.bonusCoins,
+      totalCoins: calc.totalCoins,
+      subtotalNGN: calc.subtotalNGN,
+      feeNGN: calc.feeNGN,
+      totalNGN: calc.totalNGN,
+      country: selectedCountry.code,
+      currency: selectedCountry.currency,
       status: 'completed',
       date: new Date().toISOString(),
       description,
@@ -1068,39 +933,9 @@ async function creditCoins(coins, amountPaid, transactionId, description, paymen
       paymentMethod,
       source: 'pose-shop-web'
     });
-
-    // First deposit bonus — extra coins for first-time Breet users
-    let bonusCoins = 0;
-    if(paymentMethod === 'breet' && breetFirstDeposit){
-      bonusCoins = Math.floor(coins * BREET_FIRST_DEPOSIT);
-      if(bonusCoins > 0){
-        await userRef.update({ pCoinBalance: firebase.firestore.FieldValue.increment(bonusCoins) });
-        await userRef.collection('walletTransactions').add({
-          id: 'BREET_BONUS_' + transactionId,
-          type: 'Breet First Deposit Bonus',
-          coins: bonusCoins,
-          amountPaid: 0,
-          currency: 'NGN',
-          status: 'completed',
-          date: new Date().toISOString(),
-          description: 'Breet First Deposit Welcome Bonus',
-          paymentMethod: 'breet-bonus',
-          source: 'pose-shop-web'
-        });
-        breetFirstDeposit = false;
-      }
-    }
-
     loadWalletData();
-
-    // Show appropriate toast
-    if(paymentMethod === 'breet'){
-      let msg = `💎 ${coins.toLocaleString()} coins + ${cashbackCoins} Breet cashback added!`;
-      if(bonusCoins > 0) msg = `🎁 ${coins} coins + ${cashbackCoins} cashback + ${bonusCoins} welcome bonus!`;
-      showToastMsg(msg, 'breet-toast');
-    } else {
-      showToastMsg(`🎉 ${coins.toLocaleString()} Pose Coins added to your account!`, 'success');
-    }
+    const msg = `${calc.totalCoins.toLocaleString()} Pose Coins added${calc.bonusCoins>0?` (incl. ${calc.bonusCoins} bonus)`:''}!`;
+    showToastMsg(msg, paymentMethod === 'breet' ? 'breet-toast' : 'success');
   } catch(err){
     console.error('Error crediting coins:', err);
     alert('Payment received but there was an error updating your coins.\nPlease contact support: poseinfos@gmail.com\nTransaction ID: ' + transactionId);
@@ -1119,7 +954,11 @@ function showToastMsg(msg, cls){
 function openModal(id){ document.getElementById('modal-'+id).classList.add('open'); document.body.style.overflow='hidden'; }
 function closeModal(id){ document.getElementById('modal-'+id).classList.remove('open'); document.body.style.overflow=''; }
 function closeModalOutside(e, id){ if(e.target===document.getElementById(id)) closeModal(id); }
-document.addEventListener('keydown', e => { if(e.key==='Escape') ['privacy','terms','help','breet'].forEach(id=>closeModal(id)); });
+document.addEventListener('keydown', e => { if(e.key==='Escape') ['privacy','terms','help','coverage'].forEach(id=>closeModal(id)); });
+
+/* ── INIT ── */
+renderAll();
+renderFxTable();
 </script>
 </body>
-</html>
+  </html>
