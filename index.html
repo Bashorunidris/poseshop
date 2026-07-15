@@ -1,882 +1,544 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Pose Shop — Buy Pose Coins</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="https://checkout.flutterwave.com/v3.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-:root{
-  --void:#0B0710;--surface:#150F22;--surface2:#1C1430;--surface3:#241A3D;--surface4:#180F28;
-  --violet:#8355FF;--violet-deep:#3D1F91;--violet-glow:rgba(131,85,255,0.22);
-  --gold:#E3B34D;--gold-soft:#F4D480;--gold-deep:#9C7420;--gold-glow:rgba(227,179,77,0.16);
-  --cyan:#4FD1E8;--cyan-deep:#1B8FA3;--cyan-glow:rgba(79,209,232,0.16);
-  --ink:#FFFFFF;--mute:#BDB4D6;--mute2:#8A80A8;--line:rgba(255,255,255,0.14);--line2:rgba(255,255,255,0.07);
-  --green:#22C55E;--red:#F0596B;
-  --safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom);
-  --safe-left:env(safe-area-inset-left);--safe-right:env(safe-area-inset-right);
-}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
-body{background:var(--void);color:var(--ink);font-family:'DM Sans',sans-serif;font-weight:400;min-height:100vh;overflow-x:hidden;}
-.mono{font-family:'JetBrains Mono',monospace;font-weight:600;font-variant-numeric:tabular-nums;}
-
-/* ── LOGIN GATE ── */
-#loginGate{position:fixed;inset:0;z-index:9999;background:rgba(6,3,10,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:flex;align-items:center;justify-content:center;padding:max(24px,calc(var(--safe-top)+16px)) max(24px,var(--safe-right)) max(24px,var(--safe-bottom)) max(24px,var(--safe-left));transition:opacity 0.4s;}
-#loginGate.hidden{opacity:0;pointer-events:none;}
-.login-card{background:var(--surface2);border:1px solid rgba(227,179,77,0.18);border-radius:26px;padding:36px 28px;width:100%;max-width:400px;text-align:center;}
-.login-logo{display:inline-flex;align-items:center;gap:10px;justify-content:center;margin-bottom:22px;}
-.logo-box{width:36px;height:36px;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.logo-box img{width:100%;height:100%;object-fit:cover;display:block;}
-.logo-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;color:var(--ink);}
-.logo-shop{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:600;align-self:flex-end;margin-bottom:3px;}
-.login-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;margin-bottom:6px;}
-.login-sub{font-size:13px;color:var(--mute);margin-bottom:26px;line-height:1.65;}
-.login-sub span{color:var(--gold);}
-#loginError{background:rgba(240,89,107,0.1);border:1px solid rgba(240,89,107,0.3);border-radius:10px;padding:12px 16px;font-size:13px;color:#FCA5A5;margin-bottom:16px;display:none;text-align:left;}
-.lfield{margin-bottom:14px;text-align:left;}
-.lfield label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--mute);margin-bottom:8px;font-weight:500;}
-.lfield input{width:100%;background:var(--surface3);border:1px solid rgba(131,85,255,0.25);border-radius:12px;padding:14px 16px;color:var(--ink);font-size:16px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.3s;-webkit-appearance:none;}
-.lfield input:focus{border-color:var(--gold);}
-.lfield input::placeholder{color:var(--mute);}
-.login-btn{width:100%;padding:16px;margin-top:6px;background:linear-gradient(135deg,var(--violet),var(--violet-deep));color:var(--ink);border:none;border-radius:14px;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;-webkit-appearance:none;}
-.login-btn:active{transform:scale(0.98);}
-.login-btn:disabled{opacity:0.5;cursor:not-allowed;}
-.login-note{font-size:12px;color:var(--mute);margin-top:18px;line-height:1.7;}
-.login-note span{color:var(--gold);}
-.login-divider{display:flex;align-items:center;gap:12px;margin:18px 0;}
-.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--line);}
-.login-divider span{font-size:10px;letter-spacing:2px;color:var(--mute);text-transform:uppercase;flex-shrink:0;}
-.google-btn{width:100%;padding:13px;background:#FFFFFF;color:#1F1F1F;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s;-webkit-appearance:none;}
-.google-btn:active{transform:scale(0.98);}
-.google-btn:disabled{opacity:0.6;cursor:not-allowed;}
-.google-btn svg{width:18px;height:18px;flex-shrink:0;}
-
-/* ── NAV ── */
-nav{position:sticky;top:0;z-index:100;background:rgba(11,7,16,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--line);height:58px;display:flex;align-items:center;justify-content:space-between;padding-left:max(16px,var(--safe-left));padding-right:max(16px,var(--safe-right));}
-.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
-.nav-right{display:flex;align-items:center;gap:8px;}
-.nav-region{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--line);border-radius:100px;padding:7px 12px;cursor:pointer;font-size:12px;color:var(--ink);transition:border-color 0.2s;}
-.nav-region:hover{border-color:var(--gold);}
-.nav-balance{display:flex;align-items:center;gap:6px;background:rgba(227,179,77,0.1);border:1px solid rgba(227,179,77,0.25);border-radius:100px;padding:7px 14px;}
-.nav-balance .bnum{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;letter-spacing:0.5px;color:var(--gold);}
-.nav-balance .blbl{font-size:11px;color:var(--mute);letter-spacing:1px;}
-.nav-user{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line);border-radius:100px;padding:7px 14px;}
-.nav-avatar{width:26px;height:26px;border-radius:50%;background:var(--violet);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink);flex-shrink:0;}
-.nav-email{font-size:12px;color:var(--mute);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.logout-btn{background:transparent;border:1px solid var(--line);border-radius:100px;padding:7px 14px;color:var(--mute);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;white-space:nowrap;}
-
-/* ── HERO / SIGNATURE SELECTOR ── */
-.hero{background:radial-gradient(ellipse 700px 400px at 50% -10%,rgba(131,85,255,0.22),transparent 65%),radial-gradient(ellipse 500px 300px at 90% 10%,rgba(227,179,77,0.10),transparent 60%);border-bottom:1px solid var(--line);padding:40px 20px 8px;text-align:center;position:relative;overflow:hidden;}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(227,179,77,0.1);border:1px solid rgba(227,179,77,0.25);border-radius:100px;padding:6px 16px;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold-soft);margin-bottom:18px;font-weight:600;}
-.ldot{width:6px;height:6px;border-radius:50%;background:var(--gold);display:inline-block;animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-.hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(46px,13vw,76px);letter-spacing:5px;line-height:0.95;margin-bottom:12px;}
-.hero h1 em{font-style:normal;color:var(--gold);}
-.hero p{font-size:clamp(13px,3.5vw,15px);color:var(--mute);max-width:460px;margin:0 auto 28px;line-height:1.75;}
-
-/* Region strip — the signature interactive element */
-.region-picker{max-width:760px;margin:0 auto 18px;}
-.region-picker-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mute);margin-bottom:12px;font-weight:600;}
-.region-chips{display:flex;gap:8px;overflow-x:auto;padding:4px 4px 10px;scrollbar-width:none;justify-content:flex-start;}
-.region-chips::-webkit-scrollbar{display:none;}
-@media(min-width:700px){.region-chips{justify-content:center;flex-wrap:wrap;overflow-x:visible;}}
-.rchip{flex-shrink:0;display:flex;align-items:center;gap:8px;background:var(--surface2);border:1.5px solid var(--line);border-radius:100px;padding:9px 16px 9px 9px;cursor:pointer;font-size:13px;color:var(--ink);transition:all 0.2s;white-space:nowrap;}
-.cc-badge{width:24px;height:24px;border-radius:50%;background:var(--surface3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;letter-spacing:0.3px;color:var(--ink);flex-shrink:0;}
-.rchip.active .cc-badge{background:var(--gold);color:#000;border-color:var(--gold);}
-.rchip.active.tier-africa .cc-badge{background:var(--violet);color:#fff;border-color:var(--violet);}
-.rchip.active.tier-intl .cc-badge{background:var(--cyan);color:#000;border-color:var(--cyan);}
-.rchip.active{border-color:var(--gold);background:rgba(227,179,77,0.12);}
-.rchip.active.tier-africa{border-color:var(--violet);background:rgba(131,85,255,0.14);}
-.rchip.active.tier-intl{border-color:var(--cyan);background:rgba(79,209,232,0.12);}
-
-/* Live price readout */
-.live-readout{max-width:520px;margin:6px auto 30px;background:var(--surface2);border:1px solid var(--line);border-radius:22px;padding:22px 26px;position:relative;overflow:hidden;}
-.live-readout::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(131,85,255,0.10),transparent 60%);pointer-events:none;}
-.lr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:relative;}
-.lr-tag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mute);font-weight:600;}
-.lr-tier-badge{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;padding:4px 10px;border-radius:100px;}
-.lr-tier-badge.ng{background:rgba(227,179,77,0.15);color:var(--gold-soft);}
-.lr-tier-badge.africa{background:rgba(131,85,255,0.18);color:#C4B0FF;}
-.lr-tier-badge.intl{background:rgba(79,209,232,0.15);color:var(--cyan);}
-.lr-price{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:clamp(32px,8vw,44px);letter-spacing:-1px;color:var(--ink);position:relative;}
-.lr-coins{font-size:13px;color:var(--mute);margin-top:6px;position:relative;}
-.lr-coins strong{color:var(--gold-soft);}
-
-/* ── MAIN ── */
-.main{max-width:960px;margin:0 auto;padding:20px max(16px,var(--safe-left)) max(80px,calc(60px + var(--safe-bottom))) max(16px,var(--safe-left));}
-.slabel{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:6px;}
-.stitle{font-family:'Bebas Neue',sans-serif;font-size:clamp(26px,7vw,44px);letter-spacing:3px;margin-bottom:8px;}
-.ssub{font-size:13px;color:var(--mute);line-height:1.7;margin-bottom:24px;}
-
-/* custom amount */
-.custom-box{background:var(--surface2);border:1px solid var(--line);border-radius:20px;padding:24px 22px;margin-bottom:36px;}
-.custom-box h3{font-size:15px;font-weight:600;margin-bottom:4px;}
-.custom-box p{font-size:13px;color:var(--mute);line-height:1.6;margin-bottom:16px;}
-.amt-row{display:flex;align-items:center;background:var(--surface3);border:1px solid rgba(131,85,255,0.3);border-radius:12px;overflow:hidden;margin-bottom:10px;transition:border-color 0.3s;}
-.amt-row:focus-within{border-color:var(--gold);}
-.amt-pfx{padding:0 14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:17px;color:var(--gold);border-right:1px solid var(--line);height:52px;display:flex;align-items:center;background:rgba(227,179,77,0.08);flex-shrink:0;}
-.amt-inp{background:transparent;border:none;outline:none;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:600;padding:0 14px;width:100%;height:52px;-webkit-appearance:none;}
-.amt-inp::placeholder{color:var(--mute);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:300;}
-.cprev{font-size:12px;color:var(--mute);min-height:36px;margin-bottom:12px;line-height:1.6;}
-.cprev strong{color:var(--gold-soft);}
-.cprev .bonus-tag{display:inline-block;background:rgba(131,85,255,0.15);color:#C4B0FF;border-radius:100px;padding:2px 8px;font-size:10px;font-weight:700;margin-left:4px;}
-.cbuy-btn{width:100%;padding:15px;border:none;border-radius:12px;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;-webkit-appearance:none;}
-.cbuy-btn.flw-btn{background:linear-gradient(135deg,var(--gold-soft),var(--gold-deep));color:#000;}
-.cbuy-btn:active{transform:scale(0.98);}
-
-/* ── PACKAGES (5-tier ladder) ── */
-.pkgs{display:flex;gap:14px;overflow-x:auto;padding:6px 4px 18px;margin-bottom:8px;scrollbar-width:none;}
-.pkgs::-webkit-scrollbar{display:none;}
-@media(min-width:900px){.pkgs{display:grid;grid-template-columns:repeat(5,1fr);overflow-x:visible;}}
-.pkg{flex:0 0 68vw;max-width:230px;background:var(--surface2);border:1px solid var(--line);border-radius:20px;overflow:hidden;cursor:pointer;transition:all 0.3s cubic-bezier(0.23,1,0.32,1);position:relative;display:flex;flex-direction:column;}
-@media(min-width:900px){.pkg{flex:none;max-width:none;}}
-.pkg.popular{border-color:var(--gold);box-shadow:0 8px 28px rgba(227,179,77,0.12);}
-.pkg-pop-tag{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:2;background:linear-gradient(135deg,var(--gold-soft),var(--gold-deep));color:#000;font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border-radius:100px;white-space:nowrap;}
-.pkg-head{padding:18px 16px 0;}
-.pkg-name{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mute);font-weight:700;}
-.pkg-coins-row{display:flex;align-items:baseline;gap:6px;margin:6px 0 4px;}
-.pkg-coins{font-family:'JetBrains Mono',monospace;font-size:clamp(30px,6vw,38px);color:var(--gold-soft);letter-spacing:-1px;line-height:1;font-weight:700;}
-.pkg-coins-lbl{font-size:10px;color:var(--mute);letter-spacing:0.5px;}
-.pkg-bonus{font-size:11px;color:#B79CFF;font-weight:600;min-height:16px;margin-bottom:12px;}
-.pkg-div{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:0 16px;}
-.pkg-body{padding:14px 16px 18px;flex:1;display:flex;flex-direction:column;}
-.pkg-price{font-family:'JetBrains Mono',monospace;font-size:clamp(22px,5vw,28px);letter-spacing:-0.5px;line-height:1;color:var(--ink);margin-bottom:4px;font-weight:700;}
-.pkg-fee-note{font-size:10px;color:var(--mute2);margin-bottom:14px;}
-.pkg-btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.3s;margin-top:auto;-webkit-appearance:none;background:linear-gradient(135deg,var(--gold-soft),var(--gold-deep));color:#000;}
-.pkg:not(.popular) .pkg-btn{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:var(--ink);}
-.pkg-btn:active{transform:scale(0.97);}
-
-/* ── TRUST ── */
-.trust{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:center;padding:22px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:40px;}
-.titem{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--mute);}
-.tdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
-.tdot.g{background:var(--gold);}
-.tdot.p{background:var(--violet);}
-.tdot.c{background:var(--cyan);}
-
-/* ── WHY ── */
-.why-section{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:30px 24px;margin-bottom:40px;}
-.why-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;margin-top:24px;}
-@media(min-width:640px){.why-grid{grid-template-columns:repeat(4,1fr);}}
-.wicon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
-.wicon.p{background:rgba(131,85,255,0.16);}
-.wicon.g{background:rgba(227,179,77,0.14);}
-.wicon.c{background:rgba(79,209,232,0.14);}
-.wicon svg{width:18px;height:18px;}
-.wcard h3{font-size:12.5px;font-weight:600;margin-bottom:6px;}
-.wcard p{font-size:11.5px;color:var(--mute);line-height:1.7;}
-
-/* ── HOW ── */
-.how-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border-radius:18px;overflow:hidden;margin-bottom:40px;}
-.hstep{background:var(--surface2);padding:24px 20px;position:relative;}
-.hline{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--violet),var(--gold));}
-.hnum{font-family:'JetBrains Mono',monospace;font-size:38px;color:rgba(131,85,255,0.15);line-height:1;margin-bottom:10px;font-weight:700;}
-.htitle{font-size:13px;font-weight:600;margin-bottom:6px;}
-.hdesc{font-size:11.5px;color:var(--mute);line-height:1.7;}
-
-/* ── MODAL ── */
-.modal-overlay{position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;pointer-events:none;transition:opacity 0.3s;}
-.modal-overlay.open{opacity:1;pointer-events:all;}
-.modal-sheet{background:var(--surface);border:1px solid var(--line);border-radius:24px 24px 0 0;width:100%;max-width:640px;max-height:85vh;overflow-y:auto;padding:28px 24px max(32px,calc(20px + var(--safe-bottom)));-webkit-overflow-scrolling:touch;transform:translateY(100%);transition:transform 0.35s cubic-bezier(0.23,1,0.32,1);}
-.modal-overlay.open .modal-sheet{transform:translateY(0);}
-.modal-handle{width:36px;height:4px;background:var(--line);border-radius:2px;margin:0 auto 20px;}
-.modal-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;margin-bottom:6px;}
-.modal-sub{font-size:12px;color:var(--mute);margin-bottom:20px;}
-.modal-body{font-size:13px;color:var(--mute);line-height:1.85;}
-.modal-body h4{font-size:13px;font-weight:700;color:var(--ink);margin:18px 0 6px;}
-.modal-body h4:first-child{margin-top:0;}
-.modal-body a{color:var(--gold);text-decoration:none;}
-.modal-body table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px;font-family:'JetBrains Mono',monospace;}
-.modal-body table th,.modal-body table td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);}
-.modal-body table th{color:var(--ink);font-weight:700;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;font-family:'DM Sans',sans-serif;}
-.modal-close{margin-top:24px;width:100%;padding:14px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;color:var(--mute);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;}
-
-/* ── TOAST ── */
-#toast{position:fixed;bottom:max(28px,calc(20px + var(--safe-bottom)));left:50%;transform:translateX(-50%) translateY(120px);border-radius:14px;padding:14px 24px;font-size:13px;font-weight:600;z-index:7000;transition:transform 0.4s;white-space:nowrap;pointer-events:none;}
-#toast.success{background:rgba(34,197,94,0.14);border:1px solid rgba(34,197,94,0.4);color:#86EFAC;}
-#toast.show{transform:translateX(-50%) translateY(0);}
-
-/* ── FOOTER ── */
-footer{background:var(--surface);border-top:1px solid var(--line);padding:24px max(20px,var(--safe-left)) max(28px,calc(16px + var(--safe-bottom))) max(20px,var(--safe-left));text-align:center;}
-.footer-inner{max-width:960px;margin:0 auto;}
-footer p{font-size:11px;color:var(--mute);line-height:1.9;margin-bottom:16px;}
-.flinks{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
-.flinks a{font-size:12px;color:var(--mute);text-decoration:none;padding:2px 0;transition:color 0.2s;cursor:pointer;}
-.flinks a:hover{color:var(--ink);}
-
-@media(hover:hover){
-  .pkg:hover{transform:translateY(-5px);box-shadow:0 20px 44px rgba(0,0,0,0.5);}
-  .rchip:hover{border-color:var(--gold);}
-  .logout-btn:hover{border-color:rgba(240,89,107,0.5);color:#FCA5A5;}
-}
-@media(max-width:540px){
-  .why-grid{grid-template-columns:1fr 1fr;}
-  .how-strip{grid-template-columns:1fr;}
-  .nav-user{display:none;}
-  .login-card{padding:28px 22px;}
-}
-</style>
-</head>
-<body>
-
-<!-- LOGIN GATE -->
-<div id="loginGate">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="logo-box"><img src="https://i.ibb.co/27fn8Xzh/poselogobg-removebg-preview.png" alt="Pose"/></div>
-      <div class="logo-name">POSE</div>
-      <div class="logo-shop">SHOP</div>
-    </div>
-    <div class="login-title">SIGN IN</div>
-    <div class="login-sub">Use your Pose account to buy coins.<br>No account? <span>Download the Pose app to register.</span></div>
-    <div id="loginError"></div>
-    <div class="lfield">
-      <label>Email Address</label>
-      <input type="email" id="loginEmail" placeholder="yourname@email.com" autocomplete="email"/>
-    </div>
-    <div class="lfield">
-      <label>Password</label>
-      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
-    </div>
-    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In to Pose Shop</button>
-    <div class="login-divider"><span>Or</span></div>
-    <button class="google-btn" id="googleBtn" onclick="doGoogleLogin()">
-      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.1-5l-6.5-5.4C29.6 35.5 26.9 36.5 24 36.5c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.6 39.7 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4.1 5.6l6.5 5.4C41.4 35.6 44 30.2 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
-      Continue with Google
-    </button>
-    <div class="login-note"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" style="vertical-align:-1px;margin-right:5px;"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="1.8"/></svg>Secured login · Coins appear in the app immediately<br>Only existing Pose users can sign in here</div>
-  </div>
-</div>
-
-<!-- NAV -->
-<nav>
-  <a href="#" class="nav-logo">
-    <div class="logo-box"><img src="https://i.ibb.co/27fn8Xzh/poselogobg-removebg-preview.png" alt="Pose"/></div>
-    <div class="logo-name">POSE</div>
-    <div class="logo-shop">SHOP</div>
-  </a>
-  <div class="nav-right">
-    <div class="nav-region" onclick="document.getElementById('regionPicker').scrollIntoView({behavior:'smooth',block:'center'})">
-      <span class="cc-badge" id="navFlag" style="width:18px;height:18px;font-size:8px;">NG</span><span id="navCurrency">NGN</span>
-    </div>
-    <div class="nav-balance">
-      <span class="bnum" id="navCoins">—</span>
-      <span class="blbl" style="color:var(--gold);display:flex;align-items:center;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M9 12h6M12 9v6" stroke="currentColor" stroke-width="1.6"/></svg></span>
-    </div>
-    <div class="nav-user">
-      <div class="nav-avatar" id="navAvatar">?</div>
-      <span class="nav-email" id="navEmail">—</span>
-    </div>
-    <button class="logout-btn" onclick="doLogout()">Sign Out</button>
-  </div>
-</nav>
-
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-badge"><span class="ldot"></span> Official Coin Store · Priced For Where You Are</div>
-  <h1>POSE<br><em>COINS</em></h1>
-  <p><strong style="color:var(--ink);font-weight:500;">Watch what you love. Support who you love.</strong><br>Pick your country below and every price on this page updates instantly to what you'd actually pay.</p>
-
-  <div class="region-picker" id="regionPicker">
-    <div class="region-picker-label">Where are you buying from?</div>
-    <div class="region-chips" id="regionChips"></div>
-  </div>
-
-  <div class="live-readout">
-    <div class="lr-top">
-      <span class="lr-tag">Popular Pack, right now</span>
-      <span class="lr-tier-badge" id="lrTierBadge">Nigeria</span>
-    </div>
-    <div class="lr-price mono" id="lrPrice">₦1,560</div>
-    <div class="lr-coins" id="lrCoins">63 coins total <strong>(60 + 3 bonus)</strong></div>
-  </div>
-</div>
-
-<!-- MAIN -->
-<div class="main">
-
-  <div class="slabel">Pose Shop</div>
-  <div class="stitle">BUY <span style="color:var(--gold)">POSE COINS</span></div>
-  <div class="ssub" id="rateSummary">Loading pricing for your region…</div>
-
-  <!-- CUSTOM AMOUNT -->
-  <div class="custom-box">
-    <h3>Enter Your Own Amount</h3>
-    <p id="customBoxHint">Type any amount and see exactly how many coins you'll receive before paying.</p>
-    <div class="amt-row">
-      <div class="amt-pfx" id="amtPfx">₦</div>
-      <input class="amt-inp" type="number" id="customAmt" placeholder="e.g. 1000" min="0" inputmode="decimal" oninput="previewCustom(this.value)">
-    </div>
-    <div class="cprev" id="cprev"></div>
-    <button class="cbuy-btn flw-btn" id="customBuyBtn" onclick="buyCustom()">Pay & Get Coins →</button>
-  </div>
-
-  <!-- PACKAGES -->
-  <div class="pkgs" id="pkgContainer"></div>
-
-  <!-- TRUST -->
-  <div class="trust">
-    <div class="titem"><div class="tdot g"></div>Priced for your country</div>
-    <div class="titem"><div class="tdot p"></div>Coins never expire</div>
-    <div class="titem"><div class="tdot g"></div>Supports real creators</div>
-  </div>
-
-  <!-- WHY -->
-  <div class="why-section">
-    <div class="slabel">Why Pose Coins?</div>
-    <div class="stitle" style="font-size:clamp(22px,5vw,36px);">WATCH WHAT YOU LOVE.<br><span style="color:var(--gold)">SUPPORT WHO YOU LOVE.</span></div>
-    <div class="why-grid">
-      <div class="wcard">
-        <div class="wicon p"><svg viewBox="0 0 24 24" fill="none"><path d="M5 3L19 12L5 21V3Z" fill="#B79CFF"/></svg></div>
-        <h3>Unlock Premium Content</h3>
-        <p>Exclusive videos from your favourite creators, whenever you want them.</p>
-      </div>
-      <div class="wcard">
-        <div class="wicon g"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#E3B34D" stroke-width="1.8"/><path d="M12 7V12L15 14" stroke="#E3B34D" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-        <h3>Coins Never Expire</h3>
-        <p>Buy today, spend whenever. Your balance just waits for you.</p>
-      </div>
-      <div class="wcard">
-        <div class="wicon p"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 4 14 4 9a8 8 0 0116 0c0 5-8 12-8 12z" fill="#8355FF" opacity="0.7"/><circle cx="12" cy="9" r="2.5" fill="#B79CFF"/></svg></div>
-        <h3>Support Creators Directly</h3>
-        <p>Every coin funds someone's dream and livelihood, instantly.</p>
-      </div>
-      <div class="wcard">
-        <div class="wicon c"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 9.6H22L15.8 14.4L18.2 22L12 17.2L5.8 22L8.2 14.4L2 9.6H9.6L12 2Z" fill="#4FD1E8" opacity="0.85"/></svg></div>
-        <h3>Priced For You</h3>
-        <p>Nigeria, Africa, or anywhere else — the price you see is the price built for your region.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- HOW IT WORKS -->
-  <div class="slabel" style="margin-bottom:8px">Simple Process</div>
-  <div class="stitle" style="font-size:clamp(22px,5vw,38px);margin-bottom:24px">HOW IT <span style="color:var(--gold)">WORKS</span></div>
-  <div class="how-strip">
-    <div class="hstep"><div class="hline"></div><div class="hnum">01</div><div class="htitle">Pick Your Country</div><div class="hdesc">Every price on the page updates instantly to your region and currency.</div></div>
-    <div class="hstep"><div class="hnum">02</div><div class="htitle">Choose a Pack</div><div class="hdesc">5 sizes, from a tiny top-up to a big bonus-loaded pack. See the total before you pay.</div></div>
-    <div class="hstep"><div class="hnum">03</div><div class="htitle">Pay & Enjoy</div><div class="hdesc">Card or bank transfer. Coins land in your Pose app the moment payment confirms.</div></div>
-  </div>
-
-</div>
-
-<!-- TOAST -->
-<div id="toast" class="success"></div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-inner">
-    <p>© 2025 Pose. All rights reserved. Pose Coins are virtual currency for use within the Pose app only. All purchases are final.</p>
-    <div class="flinks">
-      <a onclick="openModal('privacy')">Privacy Policy</a>
-      <a onclick="openModal('terms')">Terms of Use</a>
-      <a onclick="openModal('help')">Help Centre</a>
-      <a onclick="openModal('coverage')">Pricing & Coverage</a>
-      <a href="#" target="_blank" rel="noopener">Download App</a>
-    </div>
-  </div>
-</footer>
-
-<!-- PRIVACY MODAL -->
-<div class="modal-overlay" id="modal-privacy" onclick="closeModalOutside(event,'modal-privacy')">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">PRIVACY POLICY</div>
-    <div class="modal-sub">Last updated: July 2026</div>
-    <div class="modal-body">
-      <h4>1. Information We Collect</h4>
-      When you use Pose Shop, we collect your email address and user ID from your Pose account to process your purchase and credit coins to your wallet, plus transaction details for record-keeping.
-      <h4>2. How We Use Your Information</h4>
-      Used solely to process payments, credit coins, and provide support. We never sell or share your data for marketing.
-      <h4>3. Payment Processing</h4>
-      Payments are processed by Flutterwave (card/bank). Pose does not store your card details.
-      <h4>4. Your Rights</h4>
-      Request access, correction, or deletion of your data anytime at <a href="mailto:poseinfos@gmail.com">poseinfos@gmail.com</a>.
-    </div>
-    <button class="modal-close" onclick="closeModal('privacy')">Close</button>
-  </div>
-</div>
-
-<!-- TERMS MODAL -->
-<div class="modal-overlay" id="modal-terms" onclick="closeModalOutside(event,'modal-terms')">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">TERMS OF USE</div>
-    <div class="modal-sub">Last updated: July 2026</div>
-    <div class="modal-body">
-      <h4>1. Pose Coins</h4>
-      Pose Coins are a virtual in-app currency for use exclusively within the Pose app. They cannot be transferred, resold, withdrawn, or exchanged for cash.
-      <h4>2. Purchases Are Final</h4>
-      All purchases are non-refundable once coins are credited.
-      <h4>3. Regional Pricing</h4>
-      Coin prices vary by country to reflect local purchasing power and payment processing costs. All prices are set in Naira and converted to your local currency at a fixed rate that Pose updates periodically — not a live market rate — to keep prices stable.
-      <h4>4. Service Fee</h4>
-      A service fee is added to every purchase to cover payment processing (4% Nigeria, 6% other African countries, 10% elsewhere), calculated on the coin price before any bonus.
-      <h4>5. Bonus Coins</h4>
-      Select packages include bonus coins at no extra cost, shown before you pay.
-      <h4>6. Contact</h4>
-      Questions? Email <a href="mailto:poseinfos@gmail.com">poseinfos@gmail.com</a>.
-    </div>
-    <button class="modal-close" onclick="closeModal('terms')">Close</button>
-  </div>
-</div>
-
-<!-- HELP MODAL -->
-<div class="modal-overlay" id="modal-help" onclick="closeModalOutside(event,'modal-help')">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">HELP CENTRE</div>
-    <div class="modal-sub">We're here to help — reach us anytime</div>
-    <div class="modal-body">
-      <h4>Contact Support</h4>
-      Email <a href="mailto:poseinfos@gmail.com" style="font-size:15px;font-weight:700;">poseinfos@gmail.com</a> — we respond within 24–48 hours.
-      <h4>My coins didn't arrive</h4>
-      Card and bank payments are instant. Email us your reference if coins are missing after 30 minutes.
-      <h4>Payment failed</h4>
-      For cards, ensure international transactions are enabled.
-      <h4>I can't sign in</h4>
-      Only existing Pose app users can sign in here. Download the app to create an account first.
-    </div>
-    <button class="modal-close" onclick="closeModal('help')">Close</button>
-  </div>
-</div>
-
-<!-- PRICING & COVERAGE MODAL -->
-<div class="modal-overlay" id="modal-coverage" onclick="closeModalOutside(event,'modal-coverage')">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-title">PRICING & COVERAGE</div>
-    <div class="modal-sub">How regional pricing works, in full</div>
-    <div class="modal-body">
-      <h4>Base Price By Region</h4>
-      <table>
-        <tr><th>Region</th><th>Base rate</th><th>Min coins</th><th>Fee</th></tr>
-        <tr><td>Nigeria</td><td>₦25/coin</td><td>4</td><td>4%</td></tr>
-        <tr><td>Other Africa</td><td>₦100-eq/coin</td><td>6</td><td>6%</td></tr>
-        <tr><td>Rest of world</td><td>₦350-eq/coin</td><td>10</td><td>10%</td></tr>
-      </table>
-      <h4>Fixed Conversion Table</h4>
-      All prices are set in Naira, then converted using fixed rates below — not a live feed — so your price doesn't move day to day.
-      <table id="fxTableBody"><tr><th>Currency</th><th>₦ per unit</th></tr></table>
-      <h4>Bonus Coins</h4>
-      Starter and Basic packs: 2% bonus. Popular, Value and Mega packs: 5% bonus. Custom amounts follow the same rule based on coin count (under 60 coins = 2%, 60+ = 5%).
-      <h4>Payment Methods</h4>
-      Card, bank transfer, USSD and mobile money via Flutterwave, charged in your local currency where supported.
-      <h4>Contact</h4>
-      Questions about pricing? Email <a href="mailto:poseinfos@gmail.com">poseinfos@gmail.com</a>.
-    </div>
-    <button class="modal-close" onclick="closeModal('coverage')">Close</button>
-  </div>
-</div>
-
-<script>
-/* ── FIREBASE CONFIG ── */
-const firebaseConfig={apiKey:"AIzaSyDW8V2SjNITrA4LcdmeILh944mTbOKnM0c",authDomain:"rewarderhub.firebaseapp.com",projectId:"rewarderhub",storageBucket:"rewarderhub.appspot.com",messagingSenderId:"85965945106",appId:"1:85965945106:web:fa0a57d8968926e1041bcb",measurementId:"G-F2ERB5NGN0"};
-firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore(),auth=firebase.auth();
-const FLW_PUB_KEY="FLWPUBK-5000677a0e4e7d4c4759f83d112397b0-X";
-
-const ICON_LOCK='<svg viewBox="0 0 24 24" width="12" height="12" fill="none" style="vertical-align:-1px;margin-right:5px;display:inline-block;"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" stroke-width="1.8"/></svg>';
-const ICON_COIN='<svg viewBox="0 0 24 24" width="13" height="13" fill="none" style="vertical-align:-2px;margin-right:3px;"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M9 12h6M12 9v6" stroke="currentColor" stroke-width="1.6"/></svg>';
-const ICON_STAR='<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" style="vertical-align:-1px;margin-right:4px;"><path d="M12 2l2.9 6.6L22 9.3l-5 4.8L18.2 22 12 18.3 5.8 22 7 14.1l-5-4.8 7.1-0.7L12 2z"/></svg>';
-const ICON_SPARKLE='<svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" style="vertical-align:-1px;margin-right:4px;"><path d="M12 2l1.4 5.6L19 9l-5.6 1.4L12 16l-1.4-5.6L5 9l5.6-1.4L12 2z"/></svg>';
-const ICON_CHECK='<svg viewBox="0 0 24 24" width="13" height="13" fill="none" style="vertical-align:-2px;margin-right:4px;"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-
-/* ── PRICING ENGINE ──────────────────────────────────────────────────────
-   All prices are computed in Naira first, then converted to the buyer's
-   currency using the FIXED (not live) table below. Rates were set with a
-   deliberate buffer under the live market rate so a sudden Naira move
-   never crashes the foreign-currency price. Update this table manually,
-   on your own schedule — it is intentionally not fetched from an API.
-──────────────────────────────────────────────────────────────────────── */
-const TIERS = {
-  NG:     { rate:25,  minCoins:4,  fee:0.04 },
-  AFRICA: { rate:75,  minCoins:6,  fee:0.06 },
-  INTL:   { rate:150, minCoins:8,  fee:0.10 }
-};
-
-// NGN owed per 1 unit of the foreign currency (fixed, buffered ~27% under live rate)
-const FX = {
-  NGN:1,  USD:1000, GBP:1335, CAD:700, INR:10.5, JPY:6.2,
-  GHS:88, KES:7.75, ZAR:61.60, UGX:0.275, TZS:0.38
-};
-const ZERO_DECIMAL = new Set(['NGN','JPY','UGX','TZS']);
-const SYMBOLS = { NGN:'₦', USD:'$', GBP:'£', CAD:'C$', INR:'₹', JPY:'¥', GHS:'GH₵', KES:'KSh', ZAR:'R', UGX:'USh', TZS:'TSh' };
-
-const COUNTRIES = [
-  { code:'NG', name:'Nigeria',       tier:'NG',     currency:'NGN' },
-  { code:'GH', name:'Ghana',         tier:'AFRICA', currency:'GHS' },
-  { code:'KE', name:'Kenya',         tier:'AFRICA', currency:'KES' },
-  { code:'ZA', name:'South Africa',  tier:'AFRICA', currency:'ZAR' },
-  { code:'UG', name:'Uganda',        tier:'AFRICA', currency:'UGX' },
-  { code:'TZ', name:'Tanzania',      tier:'AFRICA', currency:'TZS' },
-  { code:'XA', name:'Other Africa',  tier:'AFRICA', currency:'NGN' },
-  { code:'US', name:'United States', tier:'INTL',   currency:'USD' },
-  { code:'GB', name:'United Kingdom',tier:'INTL',   currency:'GBP' },
-  { code:'CA', name:'Canada',        tier:'INTL',   currency:'CAD' },
-  { code:'IN', name:'India',         tier:'INTL',   currency:'INR' },
-  { code:'JP', name:'Japan',         tier:'INTL',   currency:'JPY' },
-  { code:'XX', name:'Other',         tier:'INTL',   currency:'USD' }
-];
-
-const PACKAGES = [
-  { key:'starter', name:'Starter', coinsByTier:{NG:4, AFRICA:6, INTL:8} },
-  { key:'basic',   name:'Basic',   coins:20 },
-  { key:'popular', name:'Popular', coins:60, popular:true },
-  { key:'value',   name:'Value',   coins:120 },
-  { key:'mega',    name:'Mega',    coins:480 }
-];
-
-let selectedCountry = COUNTRIES[0];
-let currentUser = null;
-
-function getCountry(code){ return COUNTRIES.find(c=>c.code===code) || COUNTRIES[0]; }
-
-function bonusPercent(baseCoins){ return baseCoins < 60 ? 0.02 : 0.05; }
-
-// Core calc: everything is computed in NGN, converted to display currency last.
-function priceCoins(baseCoins, tierKey){
-  const tier = TIERS[tierKey];
-  const bonusPct = bonusPercent(baseCoins);
-  const bonusCoins = Math.floor(baseCoins * bonusPct);
-  const totalCoins = baseCoins + bonusCoins;
-  const subtotalNGN = baseCoins * tier.rate;
-  const feeNGN = subtotalNGN * tier.fee;
-  const totalNGN = subtotalNGN + feeNGN;
-  return { baseCoins, bonusCoins, totalCoins, subtotalNGN, feeNGN, totalNGN, bonusPct };
-}
-
-function ngnToCurrency(ngnAmount, currency){
-  return ngnAmount / (FX[currency] || 1);
-}
-
-function formatMoney(amount, currency){
-  const sym = SYMBOLS[currency] || currency+' ';
-  const decimals = ZERO_DECIMAL.has(currency) ? 0 : 2;
-  const num = amount.toLocaleString(undefined, {minimumFractionDigits:decimals, maximumFractionDigits:decimals});
-  return sym + num;
-}
-
-function minCoinsForTier(tierKey){ return TIERS[tierKey].minCoins; }
-
-/* ── RENDER ── */
-function buildRegionChips(){
-  const wrap = document.getElementById('regionChips');
-  wrap.innerHTML = COUNTRIES.map(c => `
-    <div class="rchip ${c.code===selectedCountry.code?'active':''} tier-${c.tier.toLowerCase()}" data-code="${c.code}" onclick="setCountry('${c.code}')">
-      <span class="cc-badge">${c.code.length>2?c.code.slice(0,2):c.code}</span>${c.name}
-    </div>`).join('');
-}
-
-function setCountry(code){
-  selectedCountry = getCountry(code);
-  renderAll();
-}
-
-function tierBadgeLabel(tier){
-  if(tier==='NG') return 'Nigeria';
-  if(tier==='AFRICA') return 'Africa';
-  return 'International';
-}
-function tierBadgeClass(tier){
-  if(tier==='NG') return 'ng';
-  if(tier==='AFRICA') return 'africa';
-  return 'intl';
-}
-
-function renderLiveReadout(){
-  const popular = PACKAGES.find(p=>p.key==='popular');
-  const calc = priceCoins(popular.coins, selectedCountry.tier);
-  const amt = ngnToCurrency(calc.totalNGN, selectedCountry.currency);
-  document.getElementById('lrPrice').textContent = formatMoney(amt, selectedCountry.currency);
-  document.getElementById('lrCoins').innerHTML = `${calc.totalCoins} coins total <strong>(${calc.baseCoins} + ${calc.bonusCoins} bonus)</strong>`;
-  const badge = document.getElementById('lrTierBadge');
-  badge.textContent = tierBadgeLabel(selectedCountry.tier);
-  badge.className = 'lr-tier-badge ' + tierBadgeClass(selectedCountry.tier);
-}
-
-function renderRateSummary(){
-  const tier = TIERS[selectedCountry.tier];
-  const minAmt = ngnToCurrency(tier.rate * tier.minCoins, selectedCountry.currency);
-  document.getElementById('rateSummary').textContent =
-    `Prices shown for ${selectedCountry.name}. Minimum purchase: ${tier.minCoins} coins (${formatMoney(minAmt, selectedCountry.currency)}). Service fee: ${Math.round(tier.fee*100)}%.`;
-}
-
-function renderNav(){
-  document.getElementById('navFlag').textContent = selectedCountry.code.slice(0,2);
-  document.getElementById('navCurrency').textContent = selectedCountry.currency;
-}
-
-function renderPackages(){
-  const wrap = document.getElementById('pkgContainer');
-  wrap.innerHTML = PACKAGES.map(pkg => {
-    const baseCoins = pkg.coinsByTier ? pkg.coinsByTier[selectedCountry.tier] : pkg.coins;
-    const calc = priceCoins(baseCoins, selectedCountry.tier);
-    const amt = ngnToCurrency(calc.totalNGN, selectedCountry.currency);
-    const feeAmt = ngnToCurrency(calc.feeNGN, selectedCountry.currency);
-    return `
-    <div class="pkg ${pkg.popular?'popular':''}" onclick="buyPkg('${pkg.key}')">
-      ${pkg.popular?`<div class="pkg-pop-tag">${ICON_STAR}Most Popular</div>`:''}
-      <div class="pkg-head">
-        <span class="pkg-name">${pkg.name}</span>
-        <div class="pkg-coins-row"><div class="pkg-coins">${calc.totalCoins}</div><div class="pkg-coins-lbl">coins</div></div>
-        <div class="pkg-bonus">${calc.bonusCoins>0? ICON_SPARKLE+'+'+calc.bonusCoins+' bonus coins' : ''}</div>
-      </div>
-      <div class="pkg-div"></div>
-      <div class="pkg-body">
-        <div class="pkg-price mono">${formatMoney(amt, selectedCountry.currency)}</div>
-        <div class="pkg-fee-note">incl. ${formatMoney(feeAmt, selectedCountry.currency)} service fee</div>
-        <button class="pkg-btn">Buy Now →</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderCustomBox(){
-  document.getElementById('amtPfx').textContent = SYMBOLS[selectedCountry.currency] || selectedCountry.currency;
-  const tier = TIERS[selectedCountry.tier];
-  const minAmt = ngnToCurrency(tier.rate * tier.minCoins, selectedCountry.currency);
-  document.getElementById('customBoxHint').textContent =
-    `Minimum ${tier.minCoins} coins (${formatMoney(minAmt, selectedCountry.currency)}). Type any amount above that to see your total.`;
-  previewCustom(document.getElementById('customAmt').value);
-}
-
-function renderFxTable(){
-  const rows = Object.keys(FX).filter(c=>c!=='NGN').map(c =>
-    `<tr><td>${c}</td><td>₦${FX[c].toLocaleString()}</td></tr>`).join('');
-  document.getElementById('fxTableBody').innerHTML =
-    '<tr><th>Currency</th><th>₦ per unit</th></tr>' + rows;
-}
-
-function renderAll(){
-  buildRegionChips();
-  renderLiveReadout();
-  renderRateSummary();
-  renderNav();
-  renderPackages();
-  renderCustomBox();
-}
-
-/* ── CUSTOM AMOUNT LOGIC ── */
-function previewCustom(val){
-  const entered = parseFloat(val);
-  const el = document.getElementById('cprev');
-  const tier = TIERS[selectedCountry.tier];
-  if(!entered || entered <= 0){ el.innerHTML = ''; return; }
-  const enteredNGN = entered * (FX[selectedCountry.currency] || 1);
-  // work backwards: entered amount already includes fee, so base+fee = enteredNGN -> subtotal = enteredNGN/(1+fee)
-  const subtotalNGN = enteredNGN / (1 + tier.fee);
-  const baseCoins = Math.floor(subtotalNGN / tier.rate);
-  if(baseCoins < tier.minCoins){
-    const minAmt = ngnToCurrency(tier.rate * tier.minCoins, selectedCountry.currency);
-    el.innerHTML = `<span style="color:var(--red)">Minimum is ${formatMoney(minAmt, selectedCountry.currency)}</span>`;
-    return;
-  }
-  const calc = priceCoins(baseCoins, selectedCountry.tier);
-  const bonusLabel = calc.bonusPct === 0.05 ? '5% bonus tier' : '2% bonus tier';
-  el.innerHTML = `You'll receive <strong>${ICON_COIN}${calc.totalCoins} coins</strong> (${calc.baseCoins} + ${calc.bonusCoins} bonus)<span class="bonus-tag">${bonusLabel}</span>`;
-}
-
-/* ── AUTH ── */
-auth.onAuthStateChanged(user => {
-  if(user){ currentUser = user; showShop(user); }
-  else { currentUser = null; document.getElementById('loginGate').classList.remove('hidden'); }
-});
-
-function doLogin(){
-  const email = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  const errDiv = document.getElementById('loginError'), btn = document.getElementById('loginBtn');
-  errDiv.style.display = 'none';
-  if(!email || !password){ showErr('Please enter your email and password.'); return; }
-  btn.disabled = true; btn.textContent = 'Signing in…';
-  auth.signInWithEmailAndPassword(email, password).catch(err => {
-    btn.disabled = false; btn.textContent = 'Sign In to Pose Shop';
-    console.error('Email login error:', err.code, err.message);
-    const msgs = {
-      'auth/user-not-found':'No Pose account found with this email.',
-      'auth/wrong-password':'Incorrect password. Please try again.',
-      'auth/invalid-email':'Please enter a valid email address.',
-      'auth/too-many-requests':'Too many attempts. Please wait and try again.',
-      'auth/invalid-credential':'Incorrect email or password. Please try again.',
-      'auth/operation-not-allowed':'Email/password sign-in is not enabled for this app yet. Contact support.',
-      'auth/network-request-failed':'Network error. Please check your connection and try again.'
-    };
-    showErr(msgs[err.code] || `Login failed (${err.code || 'unknown error'}). Please try again or contact support.`);
-  });
-}
-function showErr(msg){ const e = document.getElementById('loginError'); e.textContent = msg; e.style.display = 'block'; }
-document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-document.getElementById('loginEmail').addEventListener('keydown',    e => { if(e.key==='Enter') doLogin(); });
-
-function doGoogleLogin(){
-  const provider = new firebase.auth.GoogleAuthProvider();
-  const btn = document.getElementById('googleBtn');
-  document.getElementById('loginError').style.display = 'none';
-  btn.disabled = true;
-  auth.signInWithPopup(provider).then(async (result) => {
-    const uid = result.user.uid;
-    try {
-      const docSnap = await db.collection('users').doc(uid).get();
-      if(!docSnap.exists){
-        await auth.signOut();
-        btn.disabled = false;
-        showErr('No Pose account is linked to this Google account yet. Please sign in with your Pose app email and password, or connect Google inside the Pose app first.');
-      }
-    } catch(checkErr){
-      console.error('Error checking Pose account for Google sign-in:', checkErr);
-      btn.disabled = false;
-    }
-  }).catch(err => {
-    btn.disabled = false;
-    if(err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
-    console.error('Google sign-in error:', err.code, err.message);
-    const msgs = {
-      'auth/account-exists-with-different-credential':'This email is already registered with a different sign-in method. Please sign in with your Pose app email and password instead.',
-      'auth/popup-blocked':'Your browser blocked the sign-in popup. Please allow popups for this site and try again.',
-      'auth/unauthorized-domain':'This site is not yet authorized for Google sign-in. Contact support.',
-      'auth/network-request-failed':'Network error. Please check your connection and try again.'
-    };
-    showErr(msgs[err.code] || `Google sign-in failed (${err.code || 'unknown error'}). Please try again or contact support.`);
-  });
-}
-
-function showShop(user){
-  document.getElementById('loginGate').classList.add('hidden');
-  const initial = (user.displayName || user.email || '?')[0].toUpperCase();
-  document.getElementById('navAvatar').textContent = initial;
-  document.getElementById('navEmail').textContent = user.email;
-  loadWalletData();
-}
-
-function loadWalletData(){
-  if(!currentUser) return;
-  db.collection('users').doc(currentUser.uid).get().then(doc => {
-    const coins = doc.exists ? (doc.data().pCoinBalance || 0) : 0;
-    document.getElementById('navCoins').textContent = coins.toLocaleString();
-  }).catch(() => { document.getElementById('navCoins').textContent = '—'; });
-}
-
-function doLogout(){
-  auth.signOut();
-  document.getElementById('loginGate').classList.remove('hidden');
-  document.getElementById('loginBtn').disabled = false;
-  document.getElementById('loginBtn').textContent = 'Sign In to Pose Shop';
-  document.getElementById('googleBtn').disabled = false;
-  document.getElementById('loginError').style.display = 'none';
-  document.getElementById('loginEmail').value = '';
-  document.getElementById('loginPassword').value = '';
-  document.getElementById('navCoins').textContent = '—';
-  document.getElementById('navEmail').textContent = '—';
-  document.getElementById('navAvatar').textContent = '?';
-}
-
-/* ── PURCHASE FLOWS ── */
-function buyPkg(pkgKey){
-  if(!currentUser){ alert('Please sign in first.'); return; }
-  const pkg = PACKAGES.find(p=>p.key===pkgKey);
-  const baseCoins = pkg.coinsByTier ? pkg.coinsByTier[selectedCountry.tier] : pkg.coins;
-  const calc = priceCoins(baseCoins, selectedCountry.tier);
-  const amt = ngnToCurrency(calc.totalNGN, selectedCountry.currency);
-  const description = `${pkg.name} Pack — ${calc.totalCoins} Pose Coins`;
-  launchFlutterwave(amt, calc, description);
-}
-
-function buyCustom(){
-  if(!currentUser){ alert('Please sign in first.'); return; }
-  const entered = parseFloat(document.getElementById('customAmt').value);
-  const tier = TIERS[selectedCountry.tier];
-  if(!entered || entered <= 0){ alert('Please enter an amount.'); return; }
-  const enteredNGN = entered * (FX[selectedCountry.currency] || 1);
-  const subtotalNGN = enteredNGN / (1 + tier.fee);
-  const baseCoins = Math.floor(subtotalNGN / tier.rate);
-  if(baseCoins < tier.minCoins){
-    const minAmt = ngnToCurrency(tier.rate * tier.minCoins, selectedCountry.currency);
-    alert(`Minimum purchase is ${formatMoney(minAmt, selectedCountry.currency)}.`);
-    return;
-  }
-  const calc = priceCoins(baseCoins, selectedCountry.tier);
-  const amt = ngnToCurrency(calc.totalNGN, selectedCountry.currency);
-  launchFlutterwave(amt, calc, `Custom — ${calc.totalCoins} Pose Coins`);
-}
-
-/* ── FLUTTERWAVE ── */
-function launchFlutterwave(amount, calc, description){
-  const txRef = `poseshop_${currentUser.uid}_${Date.now()}`;
-  FlutterwaveCheckout({
-    public_key: FLW_PUB_KEY, tx_ref: txRef, amount, currency: selectedCountry.currency, country: selectedCountry.code === 'XA' || selectedCountry.code === 'XX' ? 'NG' : selectedCountry.code,
-    payment_options: "card,ussd,banktransfer,mobilemoney",
-    customer: { email: currentUser.email, phone_number: "", name: currentUser.displayName || currentUser.email },
-    customizations: { title: "Pose Shop", description, logo: "https://i.ibb.co/Y7RxjFzF/poselogobg.jpg" },
-    callback: (response) => {
-      if(response.status === "successful" || response.status === "completed" || response.tx_ref){
-        creditCoins(calc, response.transaction_id || response.flw_ref, description, 'flutterwave');
-      } else if(response.status !== 'cancelled'){
-        alert('Payment was not completed. Please try again.');
-      }
-    },
-    onclose: () => {}
-  });
-}
-
-/* ── CREDIT COINS ── */
-async function creditCoins(calc, transactionId, description, paymentMethod){
-  if(!currentUser) return;
-  try {
-    const userRef = db.collection('users').doc(currentUser.uid);
-    await userRef.update({
-      pCoinBalance: firebase.firestore.FieldValue.increment(calc.totalCoins),
-      lastCoinPurchase: new Date().toISOString()
-    });
-    await userRef.collection('walletTransactions').add({
-      id: 'PCOIN_' + transactionId,
-      type: 'Coin Purchase',
-      baseCoins: calc.baseCoins,
-      bonusCoins: calc.bonusCoins,
-      totalCoins: calc.totalCoins,
-      subtotalNGN: calc.subtotalNGN,
-      feeNGN: calc.feeNGN,
-      totalNGN: calc.totalNGN,
-      country: selectedCountry.code,
-      currency: selectedCountry.currency,
-      status: 'completed',
-      date: new Date().toISOString(),
-      description,
-      transactionId: String(transactionId),
-      paymentMethod,
-      source: 'pose-shop-web'
-    });
-    loadWalletData();
-    const msg = `${calc.totalCoins.toLocaleString()} Pose Coins added${calc.bonusCoins>0?` (incl. ${calc.bonusCoins} bonus)`:''}!`;
-    showToastMsg(msg, 'success');
-  } catch(err){
-    console.error('Error crediting coins:', err);
-    alert('Payment received but there was an error updating your coins.\nPlease contact support: poseinfos@gmail.com\nTransaction ID: ' + transactionId);
-  }
-}
-
-/* ── TOAST ── */
-function showToastMsg(msg, cls){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = cls + ' show';
-  setTimeout(() => { t.className = cls; }, 5500);
-}
-
-/* ── MODALS ── */
-function openModal(id){ document.getElementById('modal-'+id).classList.add('open'); document.body.style.overflow='hidden'; }
-function closeModal(id){ document.getElementById('modal-'+id).classList.remove('open'); document.body.style.overflow=''; }
-function closeModalOutside(e, id){ if(e.target===document.getElementById(id)) closeModal(id); }
-document.addEventListener('keydown', e => { if(e.key==='Escape') ['privacy','terms','help','coverage'].forEach(id=>closeModal(id)); });
-
-/* ── INIT ── */
-renderAll();
-renderFxTable();
-</script>
-</body>
-  </html>
+    <meta name="google-site-verification" content="ZntzIYUzhSaJcPNak979K1XvOWWiUXq35hX87K1Va-s" />
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pose">
+    <title>Pose - African Creator Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* ====== CSS Variables for Theme ====== */
+        :root {
+            --primary: #4C1D95;
+            --primary-light: #6D28D9;
+            --primary-dark: #3B0764;
+            --bg-main: #f7f8fb;
+            --bg-card: #ffffff;
+            --text-primary: #111;
+            --text-secondary: #666;
+            --text-muted: #999;
+            --border: #e5e7eb;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --accent: #FF0050;
+            --success: #4CAF50;
+        }
+
+        /* Gifts Tab Styles */
+        .gift-claim-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.08) !important;
+            border-color: rgba(138,43,226,0.4) !important;
+        }
+        .claim-all-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+        .claim-all-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ====== Reset & Base ====== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow-x: hidden
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+            transition: var(--transition)
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            transition: var(--transition)
+        }
+
+        img {
+            max-width: 100%;
+            display: block
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px
+        }
+
+        /* RESPONSIVE CONTAINER */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 20px;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+        }
+
+        /* Modal Styles - FULL PAGE */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000000;
+            z-index: 2000;
+            width: 100%;
+            height: 100vh;
+            overflow-y: auto;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .modal-overlay.active {
+            display: block;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+        }
+
+        .modal-overlay.closing {
+            animation: slideOutRight 0.3s ease-out;
+        }
+
+        .modal {
+            background: #000000;
+            border-radius: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            color: white;
+            position: relative;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-close {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+            z-index: 2001;
+        }
+
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: scale(1.1);
+        }
+
+        /* ====== FULLSCREEN VIDEO PLAYER ====== */
+        #fullscreenVideo {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        #fullscreenVideo::-webkit-media-controls {
+            display: flex !important;
+            opacity: 1 !important;
+        }
+
+        #fullscreenVideo::-webkit-media-controls-panel {
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent) !important;
+            display: flex !important;
+        }
+
+        #fullscreenVideo::-webkit-media-controls-play-button {
+            width: 50px !important;
+            height: 50px !important;
+        }
+
+        #fullscreenVideo::-webkit-media-controls-volume-control-container {
+            display: flex !important;
+        }
+
+        #fullscreenVideo::-webkit-media-controls-fullscreen-button {
+            display: flex !important;
+        }
+
+        /* 🚫 Profile media fullscreen viewer: hide profile name, followers,
+           and profile image (owner viewing their own media doesn't need it).
+           NOTE: scoped with :not([data-source="liked"]) so liked-tab videos
+           still show the original creator's profile info. */
+        #profileMediaFullscreen:not([data-source="liked"]) .forYou-profile-section,
+        #profileMediaFullscreen:not([data-source="liked"]) .forYou-profile-container,
+        #profileMediaFullscreen:not([data-source="liked"]) .forYou-profile-info,
+        #profileMediaFullscreen:not([data-source="liked"]) .forYou-profile-name,
+        #profileMediaFullscreen:not([data-source="liked"]) .forYou-profile-name-wrapper,
+        #profileMediaFullscreen:not([data-source="liked"]) .forYou-profile-caption,
+        #profileMediaFullscreen:not([data-source="liked"]) .forYou-profile-pic,
+        #profileMediaFullscreen:not([data-source="liked"]) [id^="forYouFollowBadge-"],
+        #profileMediaFullscreen:not([data-source="liked"]) .forYou-follow-icon-badge,
+        #profileMediaFullscreen:not([data-source="liked"]) .forYou-caption,
+        #profileMediaFullscreen:not([data-source="liked"]) .see-more-btn {
+            display: none !important;
+        }
+
+        /* When the profile-media fullscreen viewer is open, lift the comment
+           modal, share menu, and any other interaction popups ABOVE it so the
+           Comment / Share / Repost buttons actually appear when clicked.
+           (#profileMediaFullscreen sits at z-index:9998; these were 999–1000.) */
+        body:has(#profileMediaFullscreen) .comment-modal,
+        body:has(#profileMediaFullscreen) .comment-modal-overlay,
+        body:has(#profileMediaFullscreen) #commentModalOverlay,
+        body:has(#profileMediaFullscreen) .share-menu,
+        body:has(#profileMediaFullscreen) #shareMenu {
+            z-index: 2147483646 !important;
+        }
+
+        /* Same hiding rule when a profile video is opened in the For You feed
+           via the back-button container path. */
+        #forYouFeed:has(#profileVideoBackButtonContainer) .forYou-profile-section,
+        #forYouFeed:has(#profileVideoBackButtonContainer) .forYou-profile-container,
+        #forYouFeed:has(#profileVideoBackButtonContainer) .forYou-profile-info,
+        #forYouFeed:has(#profileVideoBackButtonContainer) .forYou-profile-name,
+        #forYouFeed:has(#profileVideoBackButtonContainer) .forYou-profile-name-wrapper,
+        #forYouFeed:has(#profileVideoBackButtonContainer) .forYou-profile-caption,
+        #forYouFeed:has(#profileVideoBackButtonContainer) .forYou-profile-pic,
+        #forYouFeed:has(#profileVideoBackButtonContainer) [id^="forYouFollowBadge-"],
+        #forYouFeed:has(#profileVideoBackButtonContainer) .forYou-follow-icon-badge,
+        #forYouFeed:has(#profileVideoBackButtonContainer) .forYou-caption,
+        #forYouFeed:has(#profileVideoBackButtonContainer) .see-more-btn {
+            display: none !important;
+        }
+
+        .modal h2 {
+            margin: 20px 0;
+            font-size: 20px;
+            padding: 0 20px;
+        }
+
+        .modal input {
+            width: calc(100% - 40px);
+            padding: 12px;
+            margin: 0 20px 15px 20px;
+            background: #2a2a2a;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: white;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .modal input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .modal-btn {
+            width: calc(100% - 40px);
+            padding: 12px;
+            margin: 10px 20px;
+            background: linear-gradient(45deg, var(--primary), var(--primary-light));
+            border: none;
+            border-radius: var(--radius-sm);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .modal-btn:hover {
+            opacity: 0.9;
+        }
+
+        .modal-switch {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #aaa;
+            padding: 0 20px;
+        }
+
+        .modal-switch a {
+            color: var(--primary);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .error-msg {
+            background: #e74c3c;
+            color: #fff;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            margin: 0 20px 15px 20px;
+            font-size: 14px;
+            box-shadow: var(--shadow-sm);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .error-msg.success {
+            background: var(--success);
+        }
+
+        .password-requirements {
+            list-style: none;
+            margin: -6px 20px 12px 20px;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: var(--radius-sm);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 10px;
+        }
+
+        .password-requirements li {
+            font-size: 12px;
+            color: var(--text-secondary, #888);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s ease;
+        }
+
+        .password-requirements li i {
+            font-size: 6px;
+            color: #ccc;
+            transition: color 0.2s ease;
+        }
+
+        .password-requirements li.met {
+            color: var(--success);
+        }
+
+        .password-requirements li.met i {
+            color: var(--success);
+        }
+
+        .password-requirements li.met i:before {
+            content: "\f00c";
+            font-size: 10px;
+        }
+
+        /* ====== AUTH SCREEN STYLES ====== */
+        #auth-screen {
+            background: linear-gradient(135deg, hsla(285, 24%, 75%, 0.658), hsla(286, 92%, 14%, 0.458));
+            min-height: 100vh;
+            min-height: 100dvh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: clamp(15px, 3vw, 20px);
+            animation: fadeIn 0.5s ease-out;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: y mandatory;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2000;
+        }
+
+        .auth-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: clamp(15px, 4vw, 20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: min(90%, 400px);
+            padding: clamp(20px, 5vw, 30px);
+            animation: slideUp 0.5s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: clamp(20px, 5vw, 30px);
+            background: #333333;
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: clamp(12px, 3vw, 15px);
+            border: none;
+            background: none;
+            font-size: clamp(14px, 4vw, 16px);
+            cursor: pointer;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            background: hsla(286, 92%, 14%, 1);
+            border-radius: 8px;
+        }
+
+        .auth-forms {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .auth-toggle {
+            display: flex;
+            margin-bottom: clamp(15px, 4vw, 20px);
+            background: #333333;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: clamp(10px, 3vw, 12px);
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn.active {
+            background: hsla(286, 92%, 14%, 0.858);
+            color: white;
+            border-radius: 6px;
+            transform: scale(1.02);
+        }
+
+        .auth-form {
+            transition: all 0.3s ease-in-out;
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: clamp(12px, 3vw, 15px);
+            margin-bottom: clamp(12px, 3vw, 15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: clamp(14px, 4vw, 16px);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .auth-form input:focus {
+            outline: none;
+            border-color: hsla(286, 92%, 14%, 1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .auth-form input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: clamp(12px, 3vw, 15px);
+            background: hsla
